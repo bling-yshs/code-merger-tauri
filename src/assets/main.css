@@ -1,0 +1,9 @@
+html, body, #app {
+    background: transparent;
+    margin: 0 auto;
+    height: 100%;
+}
+
+p {
+    margin: 0;
+}
