@@ -4,8 +4,7 @@ on:
   push:
 jobs:
   build:
-    if: ${{inputs.ssh == false}}
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     name: 🚀 编译 (Build)
     steps:
       - name: 克隆当前仓库 (Clone current repo)
