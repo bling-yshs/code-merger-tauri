@@ -6,17 +6,17 @@
     <div>
       <exclude-extension ref="getExcludeList" />
     </div>
-    <!--<div>-->
-    <!--  <el-button-->
-    <!--    @click="-->
-    <!--      () => {-->
-    <!--        $router.push('/test')-->
-    <!--      }-->
-    <!--    "-->
-    <!--  >-->
-    <!--    <span>切换到 test</span>-->
-    <!--  </el-button>-->
-    <!--</div>-->
+    <div>
+      <el-button
+        @click="
+          () => {
+            $router.push('/test')
+          }
+        "
+      >
+        <span>切换到 test</span>
+      </el-button>
+    </div>
     <div class="flex gap-10">
       <div>
         <el-button @click="selectMergeFolder">
@@ -28,7 +28,7 @@
       </div>
       <el-input placeholder="或者手动输入路径" v-model="mergePath" />
       <div>
-        <el-button type="primary" @click="startMerge">
+        <el-button type="primary" @click="startMergeRun" :loading="startMergeLoading">
           <span>开始合并</span>
         </el-button>
       </div>
@@ -63,14 +63,66 @@ import { writeText } from '@tauri-apps/plugin-clipboard-manager'
 import SelectFiles from '@/compoments/select-files.vue'
 import { selectFolder } from '@/utils/path-utils'
 import { invoke } from '@tauri-apps/api/core'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import ExcludeExtension from '@/compoments/exclude-extension.vue'
 import { listen } from '@tauri-apps/api/event'
+import { useRequest } from 'vue-request'
+
+async function doStartMerge() {
+  let skipCountCheck = false
+  if (!mergePath.value) {
+    ElMessage.error('请先选择文件夹')
+    return
+  }
+  mergedString.value = ''
+  let selectPathList: Array<string> = getSelectPathList.value.getSelectPathList()
+  for (let path of selectPathList) {
+    let countRes: DataResponse<number> = await invoke('count_files', {
+      path
+    })
+    if (!countRes.success) {
+      continue
+    }
+    if (!skipCountCheck && countRes.data > 100) {
+      if (await confirmMerge(countRes.data)) {
+        skipCountCheck = true
+      } else {
+        return
+      }
+    }
+    let mergeRes: DataResponse<string> = await invoke('merge_files', {
+      path,
+      exclude: getExcludeList.value.getExcludeList()
+    })
+    if (!mergeRes.success) {
+      continue
+    }
+    mergedString.value += mergeRes.data
+  }
+  showMergedResult.value = true
+}
+
+const { run: startMergeRun, loading: startMergeLoading } = useRequest(doStartMerge, {
+  manual: true,
+  loadingDelay: 400,
+  loadingKeep: 1000
+})
+
+async function confirmMerge(num: number): Promise<boolean> {
+  try {
+    await ElMessageBox.confirm(`当前文件夹的文件数量为 ${num} ，确定要继续吗?`, '警告', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+  } catch (e) {
+    return false
+  }
+  return true
+}
 
 onMounted(() => {
   listen('tauri://drop', (event: { payload: { paths: string[] } }) => {
-    console.log('触发了 drop')
-    console.log(event)
     if (event.payload.paths.length > 1) {
       ElMessage.error('只能选择一个文件夹')
       return
@@ -104,24 +156,4 @@ async function copyResult() {
 }
 
 const mergedString = ref<string>('')
-
-async function startMerge() {
-  if (!mergePath.value) {
-    ElMessage.error('请先选择文件夹')
-    return
-  }
-  mergedString.value = ''
-  let selectPathList: Array<string> = getSelectPathList.value.getSelectPathList()
-  for (let path of selectPathList) {
-    let res: DataResponse<string> = await invoke('merge_files', {
-      path,
-      exclude: getExcludeList.value.getExcludeList()
-    })
-    if (!res.success) {
-      continue
-    }
-    mergedString.value += res.data
-  }
-  showMergedResult.value = true
-}
 </script>

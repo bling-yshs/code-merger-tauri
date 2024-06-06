@@ -40,7 +40,11 @@ fn main() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_shell::init())
-        .invoke_handler(tauri::generate_handler![get_sub_files, merge_files])
+        .invoke_handler(tauri::generate_handler![
+            get_sub_files,
+            merge_files,
+            count_files
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
@@ -151,4 +155,23 @@ fn read_file_to_string<P: AsRef<Path>>(path: P) -> io::Result<String> {
             "Invalid UTF-8 sequence",
         )),
     }
+}
+
+// 判断传入的路径下的总文件数量
+#[tauri::command(async)]
+fn count_files(path: &str) -> DataResponse<usize> {
+    if (!Path::new(path).exists()) {
+        return DataResponse::failure("文件夹不存在".to_string());
+    }
+    let paths = if (Path::new(path).is_file()) {
+        vec![PathBuf::from(path)]
+    } else {
+        WalkDir::new(path)
+            .into_iter()
+            .filter_map(Result::ok)
+            .filter(|entry| entry.path().is_file())
+            .map(|entry| entry.into_path())
+            .collect()
+    };
+    DataResponse::success(paths.len())
 }
