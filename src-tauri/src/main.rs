@@ -5,7 +5,7 @@ use std::{fs, io};
 use std::io::Read;
 use std::path::{Path, PathBuf};
 
-use tauri::Manager;
+use tauri_plugin_os::Version::Semantic;
 use walkdir::WalkDir;
 use window_vibrancy::apply_mica;
 
@@ -16,21 +16,31 @@ mod data_response;
 mod my_file;
 
 fn main() {
+    // 判断是不是 windows 11，如果是则设置窗口透明
+    let is_win11 = matches!(
+        tauri_plugin_os::version(),
+        Semantic(_, _, c) if cfg!(target_os = "windows") && c >= 22000
+    );
+
     tauri::Builder::default()
+        .setup(move |app| {
+            let main_window = tauri::WebviewWindowBuilder::new(app, "main", Default::default())
+                .title("code-merger-tauri")
+                .transparent(is_win11)
+                .center()
+                .visible(false)
+                .build()?;
+            if is_win11 {
+                let _ = apply_mica(&main_window, None);
+            }
+            main_window.show().unwrap();
+            main_window.set_focus().unwrap();
+            Ok(())
+        })
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_shell::init())
-        .setup(|app| {
-            let window = app.get_webview_window("main").unwrap();
-
-            #[cfg(target_os = "windows")]
-                let _ = apply_mica(&window, None);
-
-            window.show().unwrap();
-            window.set_focus().unwrap();
-            Ok(())
-        })
         .invoke_handler(tauri::generate_handler![get_sub_files, merge_files])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
