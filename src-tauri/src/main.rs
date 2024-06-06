@@ -1,9 +1,9 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::{fs, io};
 use std::io::Read;
 use std::path::{Path, PathBuf};
+use std::{fs, io};
 
 use tauri_plugin_os::Version::Semantic;
 use walkdir::WalkDir;
@@ -21,7 +21,6 @@ fn main() {
         tauri_plugin_os::version(),
         Semantic(_, _, c) if cfg!(target_os = "windows") && c >= 22000
     );
-
     tauri::Builder::default()
         .setup(move |app| {
             let main_window = tauri::WebviewWindowBuilder::new(app, "main", Default::default())
@@ -124,7 +123,10 @@ fn merge_files(path: &str, exclude: Option<Vec<String>>) -> DataResponse<String>
                 res.push_str("\n```\n");
             }
             Err(_) => {
-                println!("{:?} 是一个二进制文件", path);
+                res.push_str(format!("> {}\n", path.to_string_lossy()).as_str());
+                res.push_str("```\n");
+                res.push_str("该文件是二进制文件，具体内容已忽略");
+                res.push_str("\n```\n");
             }
         }
     }
