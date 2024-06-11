@@ -6,17 +6,6 @@
     <div>
       <exclude-extension ref="getExcludeList" />
     </div>
-    <div>
-      <el-button
-        @click="
-          () => {
-            $router.push('/test')
-          }
-        "
-      >
-        <span>切换到 test</span>
-      </el-button>
-    </div>
     <div class="flex gap-10">
       <div>
         <el-button @click="selectMergeFolder">
@@ -57,7 +46,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { nextTick, onMounted, ref, watch } from 'vue'
 import { FolderOpened } from '@element-plus/icons-vue'
 import { writeText } from '@tauri-apps/plugin-clipboard-manager'
 import SelectFiles from '@/compoments/select-files.vue'
@@ -133,21 +122,12 @@ onMounted(() => {
 
 const getSelectPathList = ref()
 const getExcludeList = ref()
-
 const showMergedResult = ref<boolean>(false)
-
 const showSelect = ref<boolean>(false)
-
 const mergePath = ref<string>('')
 
 async function selectMergeFolder() {
-  showSelect.value = false
-  showMergedResult.value = false
   mergePath.value = await selectFolder()
-  if (!mergePath.value) {
-    return
-  }
-  showSelect.value = true
 }
 
 async function copyResult() {
@@ -156,4 +136,19 @@ async function copyResult() {
 }
 
 const mergedString = ref<string>('')
+
+watch(mergePath, async () => {
+  console.log('改变了')
+  let res: DataResponse<boolean> = await invoke('is_existing_directory', { path: mergePath.value })
+  if (!res.success) {
+    return
+  }
+  if (res.data === false) {
+    return
+  }
+  showSelect.value = false
+  showMergedResult.value = false
+  await nextTick()
+  showSelect.value = true
+})
 </script>

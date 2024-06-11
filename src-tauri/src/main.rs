@@ -43,7 +43,8 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             get_sub_files,
             merge_files,
-            count_files
+            count_files,
+            is_existing_directory
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
@@ -160,10 +161,10 @@ fn read_file_to_string<P: AsRef<Path>>(path: P) -> io::Result<String> {
 // 判断传入的路径下的总文件数量
 #[tauri::command(async)]
 fn count_files(path: &str) -> DataResponse<usize> {
-    if (!Path::new(path).exists()) {
+    if !Path::new(path).exists() {
         return DataResponse::failure("文件夹不存在".to_string());
     }
-    let paths = if (Path::new(path).is_file()) {
+    let paths = if Path::new(path).is_file() {
         vec![PathBuf::from(path)]
     } else {
         WalkDir::new(path)
@@ -174,4 +175,10 @@ fn count_files(path: &str) -> DataResponse<usize> {
             .collect()
     };
     DataResponse::success(paths.len())
+}
+
+// 判断传入的路径是否存在，并且是否是文件夹
+#[tauri::command(async)]
+fn is_existing_directory(path: &str) -> DataResponse<bool> {
+    DataResponse::success(fs::metadata(path).map(|m| m.is_dir()).unwrap_or(false))
 }
