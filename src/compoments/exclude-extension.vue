@@ -11,10 +11,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
+import { useLocalStorage } from '@vueuse/core'
 
 const inputValue = ref('')
-const excludeList = ref<Array<string>>(JSON.parse(localStorage.getItem('excludeList') || '[]'))
 
 const handleInput = () => {
   if (inputValue.value.trim() !== '') {
@@ -31,14 +31,7 @@ const getExcludeList = () => {
   return excludeList.value
 }
 
-// 监控 excludeList 的变化，实时写入 localStorage
-watch(
-  excludeList,
-  () => {
-    localStorage.setItem('excludeList', JSON.stringify(excludeList.value))
-  },
-  { deep: true }
-)
+const excludeList = useLocalStorage('excludeList', Array<String>)
 
 // 暴露 getExcludeList 方法给父组件
 defineExpose({ getExcludeList })

@@ -17,6 +17,7 @@
     "@tauri-apps/plugin-dialog": "2.0.0-beta.5",
     "@tauri-apps/plugin-os": "2.0.0-beta.5",
     "@tauri-apps/plugin-shell": ">=2.0.0-beta.0",
+    "@vueuse/core": "^10.10.1",
     "element-plus": "^2.7.4",
     "unocss": "^0.59.4",
     "vue": "^3.4.27",
