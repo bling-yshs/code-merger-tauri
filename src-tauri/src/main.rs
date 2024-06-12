@@ -43,8 +43,8 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             get_sub_files,
             merge_files,
-            count_files,
-            is_existing_directory
+            is_existing_directory,
+            are_files_less_than
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
@@ -139,7 +139,6 @@ fn merge_files(path: &str, exclude: Option<Vec<String>>) -> DataResponse<String>
     if res.is_empty() {
         return DataResponse::failure("该文件夹下没有任何可读文件".to_string());
     }
-
     DataResponse::success(res)
 }
 
@@ -158,23 +157,32 @@ fn read_file_to_string<P: AsRef<Path>>(path: P) -> io::Result<String> {
     }
 }
 
-// 判断传入的路径下的总文件数量
+// 判断传入的路径下的总文件数量，是否小于某个数
 #[tauri::command(async)]
-fn count_files(path: &str) -> DataResponse<usize> {
-    if !Path::new(path).exists() {
-        return DataResponse::failure("文件夹不存在".to_string());
+fn are_files_less_than(paths: Vec<&str>, num: usize) -> DataResponse<bool> {
+    let mut file_count = 0;
+    for path in paths {
+        if !Path::new(path).exists() {
+            continue;
+        }
+        if Path::new(path).is_file() {
+            file_count += 1;
+        } else {
+            for entry in WalkDir::new(path).into_iter().filter_map(Result::ok) {
+                if entry.path().is_file() {
+                    file_count += 1;
+                    if file_count >= num {
+                        return DataResponse::success(false);
+                    }
+                }
+            }
+        }
     }
-    let paths = if Path::new(path).is_file() {
-        vec![PathBuf::from(path)]
+    if file_count < num {
+        DataResponse::success(true)
     } else {
-        WalkDir::new(path)
-            .into_iter()
-            .filter_map(Result::ok)
-            .filter(|entry| entry.path().is_file())
-            .map(|entry| entry.into_path())
-            .collect()
-    };
-    DataResponse::success(paths.len())
+        DataResponse::success(false)
+    }
 }
 
 // 判断传入的路径是否存在，并且是否是文件夹

@@ -58,27 +58,27 @@ import { listen } from '@tauri-apps/api/event'
 import { useRequest } from 'vue-request'
 
 async function doStartMerge() {
-  let skipCountCheck = false
+  const CONFIRM_NUM = 100
   if (!mergePath.value) {
     ElMessage.error('请先选择文件夹')
     return
   }
+  showMergedResult.value = false
   mergedString.value = ''
   let selectPathList: Array<string> = getSelectPathList.value.getSelectPathList()
+  let res: DataResponse<boolean> = await invoke('are_files_less_than', {
+    paths: selectPathList,
+    num: CONFIRM_NUM
+  })
+  if (!res.success) {
+    return
+  }
+  if (res.data === false) {
+    if (!(await confirmMerge(CONFIRM_NUM))) {
+      return
+    }
+  }
   for (let path of selectPathList) {
-    let countRes: DataResponse<number> = await invoke('count_files', {
-      path
-    })
-    if (!countRes.success) {
-      continue
-    }
-    if (!skipCountCheck && countRes.data > 100) {
-      if (await confirmMerge(countRes.data)) {
-        skipCountCheck = true
-      } else {
-        return
-      }
-    }
     let mergeRes: DataResponse<string> = await invoke('merge_files', {
       path,
       exclude: getExcludeList.value.getExcludeList()
@@ -91,6 +91,7 @@ async function doStartMerge() {
   showMergedResult.value = true
 }
 
+
 const { run: startMergeRun, loading: startMergeLoading } = useRequest(doStartMerge, {
   manual: true,
   loadingDelay: 400,
@@ -99,7 +100,7 @@ const { run: startMergeRun, loading: startMergeLoading } = useRequest(doStartMer
 
 async function confirmMerge(num: number): Promise<boolean> {
   try {
-    await ElMessageBox.confirm(`当前文件夹的文件数量为 ${num} ，确定要继续吗?`, '警告', {
+    await ElMessageBox.confirm(`当前文件夹的文件数量大于 ${num} ，确定要继续吗?`, '警告', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning'
