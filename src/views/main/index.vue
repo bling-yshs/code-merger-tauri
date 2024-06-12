@@ -15,7 +15,7 @@
           <span>选择文件夹</span>
         </el-button>
       </div>
-      <el-input placeholder="或者手动输入路径" v-model="mergePath" />
+      <el-input placeholder="或者手动输入路径" v-model="needMergedPath" />
       <div>
         <el-button type="primary" @click="startMergeRun" :loading="startMergeLoading">
           <span>开始合并</span>
@@ -30,7 +30,7 @@
 
     <!--选择框-->
     <div v-if="showSelect">
-      <select-files v-model:target="mergePath" ref="getSelectPathList"></select-files>
+      <select-files v-model:target="needMergedPath" ref="getSelectPathList"></select-files>
     </div>
 
     <div v-if="showMergedResult">
@@ -57,9 +57,28 @@ import ExcludeExtension from '@/compoments/exclude-extension.vue'
 import { listen } from '@tauri-apps/api/event'
 import { useRequest } from 'vue-request'
 
+const needMergedPath = ref<string>('')
+
+// 监听拖拽事件
+onMounted(() => {
+  listen('tauri://drop', (event: { payload: { paths: string[] } }) => {
+    if (event.payload.paths.length > 1) {
+      ElMessage.error('只能选择一个文件夹')
+      return
+    }
+    needMergedPath.value = event.payload.paths[0]
+  })
+})
+
+// 选择文件夹
+async function selectMergeFolder() {
+  needMergedPath.value = await selectFolder()
+}
+
+// 点击开始合并的逻辑
 async function doStartMerge() {
   const CONFIRM_NUM = 100
-  if (!mergePath.value) {
+  if (!needMergedPath.value) {
     ElMessage.error('请先选择文件夹')
     return
   }
@@ -90,14 +109,14 @@ async function doStartMerge() {
   }
   showMergedResult.value = true
 }
-
-
+// loadingKeep，防止闪烁
 const { run: startMergeRun, loading: startMergeLoading } = useRequest(doStartMerge, {
   manual: true,
   loadingDelay: 400,
   loadingKeep: 1000
 })
 
+// 确认是否继续合并
 async function confirmMerge(num: number): Promise<boolean> {
   try {
     await ElMessageBox.confirm(`当前文件夹的文件数量大于 ${num} ，确定要继续吗?`, '警告', {
@@ -111,45 +130,35 @@ async function confirmMerge(num: number): Promise<boolean> {
   return true
 }
 
-onMounted(() => {
-  listen('tauri://drop', (event: { payload: { paths: string[] } }) => {
-    if (event.payload.paths.length > 1) {
-      ElMessage.error('只能选择一个文件夹')
-      return
-    }
-    mergePath.value = event.payload.paths[0]
-  })
-})
-
 const getSelectPathList = ref()
 const getExcludeList = ref()
 const showMergedResult = ref<boolean>(false)
 const showSelect = ref<boolean>(false)
-const mergePath = ref<string>('')
-
-async function selectMergeFolder() {
-  mergePath.value = await selectFolder()
-}
-
-async function copyResult() {
-  await writeText(mergedString.value)
-  ElMessage.success(`已将结果复制到剪贴板，共计 ${mergedString.value.length} 个字符`)
-}
-
 const mergedString = ref<string>('')
 
-watch(mergePath, async () => {
-  console.log('改变了')
-  let res: DataResponse<boolean> = await invoke('is_existing_directory', { path: mergePath.value })
+// 监听 needMergedPath 的变化，实时显示选择树
+watch(needMergedPath, async () => {
+  let res: DataResponse<boolean> = await invoke('is_existing_directory', {
+    path: needMergedPath.value
+  })
   if (!res.success) {
     return
   }
   if (res.data === false) {
     return
   }
-  showSelect.value = false
   showMergedResult.value = false
+  // 这里需要重新渲染才能更新树的根节点
+  showSelect.value = false
   await nextTick()
   showSelect.value = true
 })
+
+
+// 复制结果到剪贴板
+async function copyResult() {
+  await writeText(mergedString.value)
+  ElMessage.success(`已将结果复制到剪贴板，共计 ${mergedString.value.length} 个字符`)
+}
+
 </script>
