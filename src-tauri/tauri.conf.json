@@ -1,6 +1,6 @@
 {
   "productName": "code-merger-tauri",
-  "version": "0.0.0",
+  "version": "0.1.1",
   "identifier": "com.code-merger-tauri.desktop",
   "build": {
     "beforeDevCommand": "pnpm dev",
@@ -9,8 +9,7 @@
     "frontendDist": "../dist"
   },
   "app": {
-    "windows": [
-    ],
+    "windows": [],
     "security": {
       "csp": null
     }
@@ -19,11 +18,17 @@
     "active": true,
     "category": "DeveloperTool",
     "targets": [
-      "msi"
+      "nsis",
+      "deb",
+      "rpm"
     ],
     "windows": {
-      "wix": {
-        "language": "zh-CN"
+      "nsis": {
+        "installerIcon": "icons/icon.ico",
+        "languages": [
+          "SimpChinese"
+        ],
+        "installMode": "perMachine"
       }
     },
     "icon": [
