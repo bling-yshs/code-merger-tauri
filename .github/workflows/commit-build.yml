@@ -51,4 +51,4 @@ jobs:
           allowUpdates: true
           removeArtifacts: true
           prerelease: true
-          artifacts: ./src-tauri/target/release/bundle/msi
+          artifacts: ./src-tauri/target/release/bundle/msi/*
