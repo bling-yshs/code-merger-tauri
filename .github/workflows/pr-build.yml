@@ -1,11 +1,12 @@
-name: 🚀 编译 (Build)
+name: 🛠️ 自动构建 (PR)
 
 on:
-  push:
+  pull_request:
+
 jobs:
-  build:
+  commit-build:
+    name: 🛠️ 自动构建
     runs-on: windows-latest
-    name: 🚀 编译 (Build)
     steps:
       - name: 克隆当前仓库 (Clone current repo)
         uses: actions/checkout@v4
