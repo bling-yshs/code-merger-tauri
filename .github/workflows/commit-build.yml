@@ -48,6 +48,6 @@ jobs:
         uses: ncipollo/release-action@v1.14.0
         with:
           tag: v9.9.9
-          artifacts: ./src-tauri/target/release/bundle/msi/*
+          artifacts: ./src-tauri/target/release/bundle/msi
           removeArtifacts: true
           prerelease: true
