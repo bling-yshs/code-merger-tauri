@@ -6,6 +6,8 @@
   <a href="https://github.com/badges/shields/pulse"><img src="https://img.shields.io/github/commit-activity/m/bling-yshs/code-merger-tauri" alt="Activity"/></a>
   <a href="https://github.com/bling-yshs/code-merger-tauri/releases"><img src="https://img.shields.io/github/v/release/bling-yshs/code-merger-tauri" alt="GitHub release"></a>
 </p>
+
+
 ## 基本信息
 
 ### 功能介绍
