@@ -11,7 +11,7 @@ edition = "2021"
 tauri-build = { version = "2.0.0-beta", features = [] }
 
 [dependencies]
-tauri = { version = "2.0.0-beta", features = ["devtools"] }
+tauri = { version = "2.0.0-beta", features = ["devtools", "macos-private-api"] }
 tauri-plugin-shell = "2.0.0-beta"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
@@ -21,4 +21,3 @@ tokio = "1.37.0"
 walkdir = "2.5.0"
 window-vibrancy = "0.5.0"
 tauri-plugin-os = "2.0.0-beta.6"
-

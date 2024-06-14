@@ -20,7 +20,8 @@
     "targets": [
       "nsis",
       "deb",
-      "rpm"
+      "rpm",
+      "dmg"
     ],
     "windows": {
       "nsis": {
