@@ -1,11 +1,12 @@
 <p align="center"><img src="https://cdn.jsdelivr.net/gh/bling-yshs/code-merger-tauri@master/backup-resouces/app-icon.svg" width="300" alt="icon" /></p>
-<p align="center"><b>基于 <a href="https://tauri.app/">Tauri</a> 代码合并工具</b></p>
+<p align="center"><b>基于 <a href="https://tauri.app/">Tauri</a> 的代码合并工具</b></p>
 <p align="center">
   <a href="https://www.gnu.org/licenses/gpl-3.0.html"><img src="https://img.shields.io/github/license/bling-yshs/code-merger-tauri" alt="License"></a>
   <a href="https://github.com/bling-yshs/code-merger-tauri"><img src="https://img.shields.io/github/stars/bling-yshs/code-merger-tauri?style=flat" alt="Stars"></a>
   <a href="https://github.com/badges/shields/pulse"><img src="https://img.shields.io/github/commit-activity/m/bling-yshs/code-merger-tauri" alt="Activity"/></a>
   <a href="https://github.com/bling-yshs/code-merger-tauri/releases"><img src="https://img.shields.io/github/v/release/bling-yshs/code-merger-tauri" alt="GitHub release"></a>
 </p>
+
 
 
 ## 基本信息
