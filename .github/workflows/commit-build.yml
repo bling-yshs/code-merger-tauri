@@ -71,7 +71,7 @@ jobs:
             ./src-tauri/target/${{ matrix.target }}/release/bundle
 
       - name: 上传编译结果到 pre-release (Upload build result to pre-release)
-        if: ${{matrix.os == 'windows-latest'}}
+        if: ${{matrix.os == 'windows-latest' && github.ref == 'refs/heads/master'}}
         uses: ncipollo/release-action@v1
         with:
           tag: v9.9.9
@@ -81,7 +81,7 @@ jobs:
             ./src-tauri/target/${{ matrix.target }}/release/bundle/**/*.exe
 
       - name: 上传编译结果到 pre-release (Upload build result to pre-release)
-        if: ${{matrix.os == 'macos-latest'}}
+        if: ${{matrix.os == 'macos-latest' && github.ref == 'refs/heads/master'}}
         uses: ncipollo/release-action@v1
         with:
           tag: v9.9.9
@@ -91,7 +91,7 @@ jobs:
             ./src-tauri/target/${{ matrix.target }}/release/bundle/**/*.dmg
 
       - name: 上传编译结果到 pre-release (Upload build result to pre-release)
-        if: ${{matrix.os == 'ubuntu-22.04'}}
+        if: ${{matrix.os == 'ubuntu-22.04' && github.ref == 'refs/heads/master'}}
         uses: ncipollo/release-action@v1
         with:
           tag: v9.9.9
@@ -103,6 +103,7 @@ jobs:
 
   check-version:
     name: 🛠️ 检查版本号
+    if: ${{github.ref == 'refs/heads/master'}}
     runs-on: ubuntu-22.04
     steps:
       - name: 克隆当前仓库 (Clone current repo)
