@@ -154,11 +154,9 @@ watch(needMergedPath, async () => {
   showSelect.value = true
 })
 
-
 // 复制结果到剪贴板
 async function copyResult() {
   await writeText(mergedString.value)
   ElMessage.success(`已将结果复制到剪贴板，共计 ${mergedString.value.length} 个字符`)
 }
-
 </script>

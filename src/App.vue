@@ -1,7 +1,9 @@
 <template>
-  <el-scrollbar>
-    <global-view />
-  </el-scrollbar>
+  <div>
+    <el-scrollbar>
+      <global-view />
+    </el-scrollbar>
+  </div>
 </template>
 
 <script setup lang="ts">

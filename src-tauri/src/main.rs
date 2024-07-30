@@ -5,7 +5,10 @@ use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::{fs, io};
 
+use serde_json::{json, Value};
+use tauri::{Manager, Wry};
 use tauri_plugin_os::Version::Semantic;
+use tauri_plugin_store::{with_store, StoreCollection};
 use walkdir::WalkDir;
 use window_vibrancy::apply_mica;
 
@@ -22,7 +25,23 @@ fn main() {
         Semantic(_, _, c) if cfg!(target_os = "windows") && c >= 22000
     );
     tauri::Builder::default()
+        .plugin(tauri_plugin_store::Builder::new().build())
         .setup(move |app| {
+            let stores = app.app_handle().state::<StoreCollection<Wry>>();
+            let path = PathBuf::from("code-merger-tauri.bin");
+            let mut is_dark = false;
+
+            let _ = with_store(app.app_handle().clone(), stores, path, |store| {
+                is_dark = store
+                    .get("isDark")
+                    .unwrap_or(&Value::Null)
+                    .as_bool()
+                    .unwrap_or(false);
+                store.insert("isDark".to_string(), json!(is_dark))?;
+                store.save()?;
+                Ok(())
+            });
+
             let main_window = tauri::WebviewWindowBuilder::new(app, "main", Default::default())
                 .title("code-merger-tauri")
                 .transparent(is_win11)
@@ -30,7 +49,7 @@ fn main() {
                 .visible(false)
                 .build()?;
             if is_win11 {
-                let _ = apply_mica(&main_window, None);
+                let _ = apply_mica(&main_window, Some(false));
             }
             main_window.show().unwrap();
             main_window.set_focus().unwrap();
