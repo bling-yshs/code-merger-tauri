@@ -8,6 +8,7 @@
   "permissions": [
     "path:default",
     "event:default",
+    "event:allow-listen",
     "window:default",
     "app:default",
     "image:default",
@@ -17,7 +18,12 @@
     "shell:allow-open",
     "clipboard-manager:allow-write-text",
     "dialog:allow-open",
-    "os:allow-version"
-  ],
-  "capabilities": []
+    "os:allow-version",
+    "store:default",
+    "store:allow-get",
+    "store:allow-set",
+    "store:allow-save",
+    "store:allow-load",
+    "process:default"
+  ]
 }

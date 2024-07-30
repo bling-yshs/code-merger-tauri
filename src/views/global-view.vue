@@ -1,11 +1,9 @@
 <template>
-  <div class="global">
+  <div class="p-20">
     <router-view />
+    <dark-toggle />
   </div>
 </template>
-<style scoped>
-.global {
-  padding: 20px;
-}
-</style>
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import DarkToggle from '@/compoments/dark-toggle.vue'
+</script>
