@@ -25,6 +25,7 @@ fn main() {
         Semantic(_, _, c) if cfg!(target_os = "windows") && c >= 22000
     );
     tauri::Builder::default()
+        .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_store::Builder::new().build())
         .setup(move |app| {
             let stores = app.app_handle().state::<StoreCollection<Wry>>();
@@ -49,7 +50,7 @@ fn main() {
                 .visible(false)
                 .build()?;
             if is_win11 {
-                let _ = apply_mica(&main_window, Some(false));
+                let _ = apply_mica(&main_window, Some(is_dark));
             }
             main_window.show().unwrap();
             main_window.set_focus().unwrap();

@@ -23,7 +23,7 @@
     "store:allow-get",
     "store:allow-set",
     "store:allow-save",
-    "store:allow-load"
-  ],
-  "capabilities": []
+    "store:allow-load",
+    "process:default"
+  ]
 }
