@@ -131,4 +131,3 @@ jobs:
         with:
           workflow: release.yml
           inputs: '{ "version": "${{ steps.check-version.outputs.current-version }}" }'
-
