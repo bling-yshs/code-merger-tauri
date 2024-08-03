@@ -100,10 +100,7 @@ jobs:
           removeArtifacts: true
           prerelease: true
           artifacts: |
-            ./download/**/*.exe
-            ./download/**/*.dmg
-            ./download/**/*.deb
-            ./download/**/*.rpm
+            ./download/**/*.*
 
   check-version:
     name: 🛠️ 检查版本号
