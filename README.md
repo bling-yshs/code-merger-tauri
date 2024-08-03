@@ -39,7 +39,7 @@ x86_64、Arm（除Linux，因为交叉编译有问题）
 ### 下载
 
 - ✅ [稳定版](https://github.com/bling-yshs/code-merger-tauri/releases/latest)
-- 🚀 [测试版](https://github.com/bling-yshs/code-merger-tauri/releases/tag/v9.9.9)（根据最新 Commit 构建）
+- 🚀 [测试版](https://github.com/bling-yshs/code-merger-tauri/releases/tag/alpha)（根据最新 Commit 构建）
 
 #### 我应该下载什么版本？
 

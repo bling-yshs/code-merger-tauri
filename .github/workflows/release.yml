@@ -65,31 +65,32 @@ jobs:
       - name: 构建应用 (Build app)
         run: pnpm tauri build --target ${{ matrix.target }}
 
-      - name: 上传编译结果到 Release (Upload build result to Release)
-        if: ${{matrix.os == 'windows-latest'}}
-        uses: ncipollo/release-action@v1
+      - name: 上传编译结果到 Artifact (Upload build result to Artifact)
+        uses: actions/upload-artifact@v4
         with:
-          tag: ${{ inputs.version }}
-          allowUpdates: true
-          artifacts: |
-            ./src-tauri/target/${{ matrix.target }}/release/bundle/**/*.exe
+          if-no-files-found: ignore
+          name: '${{ matrix.target }}-${{ github.sha }}'
+          path: |
+            ./src-tauri/target/${{ matrix.target }}/release/bundle/nsis/*.exe
+            ./src-tauri/target/${{ matrix.target }}/release/bundle/dmg/*.dmg
+            ./src-tauri/target/${{ matrix.target }}/release/bundle/deb/*.deb
+            ./src-tauri/target/${{ matrix.target }}/release/bundle/rpm/*.rpm
 
-      - name: 上传编译结果到 pre-release (Upload build result to pre-release)
-        if: ${{matrix.os == 'macos-latest'}}
-        uses: ncipollo/release-action@v1
+  upload-to-release:
+    name: 📤 发布新版本 (Publish new version)
+    needs: commit-build
+    runs-on: ubuntu-latest
+    steps:
+      - name: 下载 Artifact (Download Artifact)
+        uses: actions/download-artifact@v4
         with:
-          tag: ${{ inputs.version }}
-          allowUpdates: true
-          artifacts: |
-            ./src-tauri/target/${{ matrix.target }}/release/bundle/**/*.dmg
+          path: ./download
+          merge-multiple: true
 
       - name: 上传编译结果到 Release (Upload build result to Release)
         if: ${{matrix.os == 'ubuntu-22.04'}}
         uses: ncipollo/release-action@v1
         with:
           tag: ${{ inputs.version }}
-          allowUpdates: true
           artifacts: |
-            ./src-tauri/target/${{ matrix.target }}/release/bundle/**/*.deb
-            ./src-tauri/target/${{ matrix.target }}/release/bundle/**/*.rpm
-
+            ./download/**/*.*
