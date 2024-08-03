@@ -75,6 +75,7 @@ jobs:
             ./src-tauri/target/${{ matrix.target }}/release/bundle/rpm/*.rpm
 
   upload-to-release-alpha:
+    name: 📤 上传到 alpha 版本 (Upload to alpha release)
     needs: commit-build
     runs-on: ubuntu-latest
     steps:
