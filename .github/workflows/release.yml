@@ -79,7 +79,7 @@ jobs:
   upload-to-release:
     name: 📤 发布新版本 (Publish new version)
     needs: commit-build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: 下载 Artifact (Download Artifact)
         uses: actions/download-artifact@v4
