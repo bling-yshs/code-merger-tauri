@@ -90,6 +90,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           custom_tag: alpha
+          tag_prefix: ''
         continue-on-error: true
 
       - name: 上传编译结果到 pre-release (Upload build result to pre-release)

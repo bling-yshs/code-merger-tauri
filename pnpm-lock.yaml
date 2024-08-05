@@ -9,26 +9,26 @@ importers:
   .:
     dependencies:
       '@tauri-apps/api':
-        specifier: '>=2.0.0-beta.0'
-        version: 2.0.0-beta.13
+        specifier: 2.0.0-rc.0
+        version: 2.0.0-rc.0
       '@tauri-apps/plugin-clipboard-manager':
-        specifier: 2.1.0-beta.3
-        version: 2.1.0-beta.3
+        specifier: 2.0.0-rc.0
+        version: 2.0.0-rc.0
       '@tauri-apps/plugin-dialog':
-        specifier: 2.0.0-beta.5
-        version: 2.0.0-beta.5
+        specifier: 2.0.0-rc.0
+        version: 2.0.0-rc.0
       '@tauri-apps/plugin-os':
-        specifier: 2.0.0-beta.5
-        version: 2.0.0-beta.5
+        specifier: 2.0.0-rc.0
+        version: 2.0.0-rc.0
       '@tauri-apps/plugin-process':
-        specifier: 2.0.0-beta.7
-        version: 2.0.0-beta.7
+        specifier: 2.0.0-rc.0
+        version: 2.0.0-rc.0
       '@tauri-apps/plugin-shell':
-        specifier: '>=2.0.0-beta.0'
-        version: 2.0.0-beta.6
+        specifier: 2.0.0-rc.0
+        version: 2.0.0-rc.0
       '@tauri-apps/plugin-store':
-        specifier: 2.0.0-beta.7
-        version: 2.0.0-beta.7
+        specifier: 2.0.0-rc.0
+        version: 2.0.0-rc.0
       '@vueuse/core':
         specifier: ^10.11.0
         version: 10.11.0(vue@3.4.27(typescript@5.4.5))
@@ -593,12 +593,8 @@ packages:
   '@sxzz/popperjs-es@2.11.7':
     resolution: {integrity: sha512-Ccy0NlLkzr0Ex2FKvh2X+OyERHXJ88XJ1MXtsI9y9fGexlaXaVTPzBCRBwIxFkORuOb+uBqeu+RqnpgYTEZRUQ==}
 
-  '@tauri-apps/api@2.0.0-beta.13':
-    resolution: {integrity: sha512-Np1opKANzRMF3lgJ9gDquBCB9SxlE2lRmNpVx1+L6RyzAmigkuh0ZulT5jMnDA3JLsuSDU135r/s4t/Pmx4atg==}
-    engines: {node: '>= 18', npm: '>= 6.6.0', yarn: '>= 1.19.1'}
-
-  '@tauri-apps/api@2.0.0-beta.15':
-    resolution: {integrity: sha512-H9w6iISmR+NvH4XuyCZB4zDN10tf9RFt6i/9JHEjaRhAowdAaJ+oiXq/3kedizNClHMtbTQ5j0oqDVPkZDAI8g==}
+  '@tauri-apps/api@2.0.0-rc.0':
+    resolution: {integrity: sha512-v454Qs3REHc3Za59U+/eSmBsdmF+3NE5+76+lFDaitVqN4ZglDHENDaMARYKGJVZuxiSkzyqG0SeG7lLQjVkPA==}
     engines: {node: '>= 18.18', npm: '>= 6.6.0', yarn: '>= 1.19.1'}
 
   '@tauri-apps/cli-darwin-arm64@2.0.0-beta.20':
@@ -670,23 +666,23 @@ packages:
     engines: {node: '>= 10'}
     hasBin: true
 
-  '@tauri-apps/plugin-clipboard-manager@2.1.0-beta.3':
-    resolution: {integrity: sha512-j48jTdZWeX5BylIGLYbXtg6ynZAcFKDKK6dguHAbG3zviqNE/XMf2vHOPJeFDZsDE5kVOZZS7nKOj7T2WiCpvw==}
+  '@tauri-apps/plugin-clipboard-manager@2.0.0-rc.0':
+    resolution: {integrity: sha512-2fS3wbRQEtorkk3Np2msJUeKCXRqLQ9sSo2FzlFdUPYNzThsu43uWCF55McGLAfltNOvXQIcQLUBf05jbBL/5w==}
 
-  '@tauri-apps/plugin-dialog@2.0.0-beta.5':
-    resolution: {integrity: sha512-jkaBCsx2v6WB6sB77fTMCeijuvT3FlzwschiHnPlD7aU6CHvQgRlpCv/FttPdTq4ih2t6MIlM4oX85hNYgfs6w==}
+  '@tauri-apps/plugin-dialog@2.0.0-rc.0':
+    resolution: {integrity: sha512-DPOXYe8SQ6Radk/67EOdaomlxL7oF99JO/ZUaPp1IBEs3Wro7lhlz63CfdKIBfKIZTLJLzP1R7/EiPL/GTA3Bg==}
 
-  '@tauri-apps/plugin-os@2.0.0-beta.5':
-    resolution: {integrity: sha512-Qfs/clZ9R05J+OVOGkko+9OaYaL+xJaGICeQ1G5CnLFpUdTfMV10D+1nBBauxDdiLU4ay5I0iprJ5aG5GJBunQ==}
+  '@tauri-apps/plugin-os@2.0.0-rc.0':
+    resolution: {integrity: sha512-OWAl8mooKnGykSD4iog8WRqcnOSx0gGmTJBlEExHdFeIuOHg0Ezvd+WiVLhT9LBg7go3ibNWRWpe/ZG7YEp4Vw==}
 
-  '@tauri-apps/plugin-process@2.0.0-beta.7':
-    resolution: {integrity: sha512-iK4HYnzeyqAZE5HAKd0mDI7ekYXUqA9azjA9AgL4LscOEHma1XGEP0DlcHn+RrXIvVbI4LwCol9DSNNoIrB0+w==}
+  '@tauri-apps/plugin-process@2.0.0-rc.0':
+    resolution: {integrity: sha512-Z12D/kmQzG1vCVf+jLXPhPDUA0pEjFrsg4p0uwO2sotVLM9287IuTM+aIz9cuAYOxFLKcsnDG7amSCL9IfA1gw==}
 
-  '@tauri-apps/plugin-shell@2.0.0-beta.6':
-    resolution: {integrity: sha512-g3nM9cQQGl7Iv4MvyFuco/aPTiwOI/MixcoKso3VQIg5Aqd64NqR0r+GfsB0qx52txItqzSXwmeaj1eZjO9Q6Q==}
+  '@tauri-apps/plugin-shell@2.0.0-rc.0':
+    resolution: {integrity: sha512-bhUcQcrqZoK8H1DFXapr5r1Z75oh6Kd5Tltz97XpZFLREEqp+KhN2Fvyh8r/fKAyenYsTYUIsDsyGdjdueuF9g==}
 
-  '@tauri-apps/plugin-store@2.0.0-beta.7':
-    resolution: {integrity: sha512-OgeicsLfN7/u/vfxhzJfsZsNfVJWrhmwhEn2oK4OJ1kvkrGbkfK0/ZORSkmqbpByI6hXWYZrbeyXDuVIefVWAQ==}
+  '@tauri-apps/plugin-store@2.0.0-rc.0':
+    resolution: {integrity: sha512-KqiEzq6EdRwxrl0/FwyNLwumDBM91xTchdu2a8vfkNub30GuP9z7RskP9ifVRI1gbxfa5TUDi0hKFk/SP7TANQ==}
 
   '@types/estree@1.0.5':
     resolution: {integrity: sha512-/kYRxGDLWzHOB7q+wtSUQlFrtcdUccpfy+X+9iMBpHK8QLLhx2wIPYuS5DYtR9Wa/YlZAbIovy7qVdB1Aq6Lyw==}
@@ -2357,9 +2353,7 @@ snapshots:
 
   '@sxzz/popperjs-es@2.11.7': {}
 
-  '@tauri-apps/api@2.0.0-beta.13': {}
-
-  '@tauri-apps/api@2.0.0-beta.15': {}
+  '@tauri-apps/api@2.0.0-rc.0': {}
 
   '@tauri-apps/cli-darwin-arm64@2.0.0-beta.20':
     optional: true
@@ -2404,29 +2398,29 @@ snapshots:
       '@tauri-apps/cli-win32-ia32-msvc': 2.0.0-beta.20
       '@tauri-apps/cli-win32-x64-msvc': 2.0.0-beta.20
 
-  '@tauri-apps/plugin-clipboard-manager@2.1.0-beta.3':
+  '@tauri-apps/plugin-clipboard-manager@2.0.0-rc.0':
     dependencies:
-      '@tauri-apps/api': 2.0.0-beta.13
+      '@tauri-apps/api': 2.0.0-rc.0
 
-  '@tauri-apps/plugin-dialog@2.0.0-beta.5':
+  '@tauri-apps/plugin-dialog@2.0.0-rc.0':
     dependencies:
-      '@tauri-apps/api': 2.0.0-beta.13
+      '@tauri-apps/api': 2.0.0-rc.0
 
-  '@tauri-apps/plugin-os@2.0.0-beta.5':
+  '@tauri-apps/plugin-os@2.0.0-rc.0':
     dependencies:
-      '@tauri-apps/api': 2.0.0-beta.13
+      '@tauri-apps/api': 2.0.0-rc.0
 
-  '@tauri-apps/plugin-process@2.0.0-beta.7':
+  '@tauri-apps/plugin-process@2.0.0-rc.0':
     dependencies:
-      '@tauri-apps/api': 2.0.0-beta.15
+      '@tauri-apps/api': 2.0.0-rc.0
 
-  '@tauri-apps/plugin-shell@2.0.0-beta.6':
+  '@tauri-apps/plugin-shell@2.0.0-rc.0':
     dependencies:
-      '@tauri-apps/api': 2.0.0-beta.13
+      '@tauri-apps/api': 2.0.0-rc.0
 
-  '@tauri-apps/plugin-store@2.0.0-beta.7':
+  '@tauri-apps/plugin-store@2.0.0-rc.0':
     dependencies:
-      '@tauri-apps/api': 2.0.0-beta.15
+      '@tauri-apps/api': 2.0.0-rc.0
 
   '@types/estree@1.0.5': {}
 
