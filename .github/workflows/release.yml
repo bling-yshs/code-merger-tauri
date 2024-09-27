@@ -88,7 +88,6 @@ jobs:
           merge-multiple: true
 
       - name: 上传编译结果到 Release (Upload build result to Release)
-        if: ${{matrix.os == 'ubuntu-22.04'}}
         uses: ncipollo/release-action@v1
         with:
           tag: ${{ inputs.version }}
