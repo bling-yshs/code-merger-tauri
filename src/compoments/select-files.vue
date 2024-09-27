@@ -59,7 +59,7 @@ function getSelectPathList(): Array<string> {
   if (!treeRef.value) {
     return []
   }
-  const checkedNodes = treeRef.value.getCheckedNodes()
+  const checkedNodes = treeRef.value.getCheckedNodes(true)
   let map = checkedNodes.map((node) => node.path)
   return map
 }
