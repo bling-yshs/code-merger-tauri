@@ -87,9 +87,22 @@ jobs:
           path: ./download
           merge-multiple: true
 
+      - name: Generate changelog
+        id: changelog
+        uses: jaywcjlove/changelog-generator@main
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          #          filter-author: (jaywcjlove|小弟调调™|dependabot|renovate\\[bot\\]|dependabot\\[bot\\]|Renovate Bot)
+          filter: '^(release|fixup|docs|ci|style|test|build):'
+
       - name: 上传编译结果到 Release (Upload build result to Release)
         uses: ncipollo/release-action@v1
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          name: ${{ inputs.version }}
           tag: ${{ inputs.version }}
+          body: |
+            ${{ steps.changelog.outputs.compareurl }}
+            ${{ steps.changelog.outputs.changelog }}
           artifacts: |
             ./download/**/*.*

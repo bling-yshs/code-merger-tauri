@@ -1,6 +1,6 @@
 {
   "productName": "code-merger-tauri",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "identifier": "com.code-merger-tauri.desktop",
   "build": {
     "beforeDevCommand": "pnpm dev",
