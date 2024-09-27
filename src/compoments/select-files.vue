@@ -59,9 +59,24 @@ function getSelectPathList(): Array<string> {
   if (!treeRef.value) {
     return []
   }
-  const checkedNodes = treeRef.value.getCheckedNodes(true)
-  let map = checkedNodes.map((node) => node.path)
-  return map
+  const selectPaths = treeRef.value.getCheckedNodes().map((node) => node.path)
+  const result = new Array<string>()
+  // 去重
+  for (const currentPath of selectPaths) {
+    // 检查当前路径是否被 result 中已有的路径包含
+    if (!result.some((parent) => isSubPath(parent, currentPath))) {
+      result.push(currentPath)
+    }
+  }
+  return result
+}
+
+function isSubPath(parent: string, child: string): boolean {
+  if (child.startsWith(parent)) {
+    return true
+  } else {
+    return false
+  }
 }
 
 defineExpose({
