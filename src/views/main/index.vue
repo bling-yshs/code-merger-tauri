@@ -61,7 +61,8 @@ const needMergedPath = ref<string>('')
 
 // 监听拖拽事件
 onMounted(() => {
-  listen('tauri://drop', (event: { payload: { paths: string[] } }) => {
+  listen('tauri://drag-drop', (event: { payload: { paths: string[] } }) => {
+    console.log('触发了拖拽事件: ', event)
     if (event.payload.paths.length > 1) {
       ElMessage.error('只能选择一个文件夹')
       return
