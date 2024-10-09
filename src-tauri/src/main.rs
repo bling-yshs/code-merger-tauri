@@ -10,6 +10,7 @@ use serde_json::{json, Value};
 use tauri::Manager;
 use tauri_plugin_os::Version::Semantic;
 use tauri_plugin_store::StoreExt;
+use tiktoken_rs::o200k_base;
 use walkdir::WalkDir;
 use window_vibrancy::apply_mica;
 
@@ -77,6 +78,7 @@ fn main() {
             get_sub_files,
             merge_files,
             is_existing_directory,
+            count_tokens,
             are_files_less_than
         ])
         .run(tauri::generate_context!())
@@ -222,4 +224,13 @@ fn are_files_less_than(paths: Vec<&str>, num: usize) -> DataResponse<bool> {
 #[tauri::command(async)]
 fn is_existing_directory(path: &str) -> DataResponse<bool> {
     DataResponse::success(fs::metadata(path).map(|m| m.is_dir()).unwrap_or(false))
+}
+
+// 通过 tiktoken-rs 计算传入的字符串有多少 token
+#[tauri::command(async)]
+fn count_tokens(content: &str) -> DataResponse<usize> {
+    let bpe = o200k_base().unwrap();
+    let tokens = bpe.encode_with_special_tokens(content);
+    let length = tokens.len();
+    DataResponse::success(length)
 }
