@@ -2,7 +2,7 @@
   <div class="space-y-4">
     <el-input v-model="inputValue" @keyup.enter="handleInput" placeholder="请输入需要排除的后缀名">
     </el-input>
-    <div class="tags">
+    <div class="flex gap-4">
       <el-tag v-for="(tag, index) in excludeList" :key="index" closable @close="removeTag(index)">
         {{ tag }}
       </el-tag>

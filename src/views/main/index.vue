@@ -110,6 +110,7 @@ async function doStartMerge() {
   }
   showMergedResult.value = true
 }
+
 // loadingKeep，防止闪烁
 const { run: startMergeRun, loading: startMergeLoading } = useRequest(doStartMerge, {
   manual: true,
@@ -158,6 +159,18 @@ watch(needMergedPath, async () => {
 // 复制结果到剪贴板
 async function copyResult() {
   await writeText(mergedString.value)
-  ElMessage.success(`已将结果复制到剪贴板，共计 ${mergedString.value.length} 个字符`)
+  let tokens = await countTokens(mergedString.value)
+  ElMessage.success(`已将结果复制到剪贴板，共计 ${tokens} 个 Tokens`)
+}
+
+async function countTokens(content: string): Promise<number> {
+  let res: DataResponse<number> = await invoke('count_tokens', {
+    content
+  })
+  if (!res.success) {
+    ElMessage.error('统计 Tokens 数量失败')
+    return 0
+  }
+  return res.data
 }
 </script>

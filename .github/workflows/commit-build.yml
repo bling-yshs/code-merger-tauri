@@ -3,6 +3,7 @@ name: 🛠️ 自动构建 (Commit)
 on:
   push:
     branches:
+      # 仅在 master 和 dev 分支上触发，其他分支请使用 PR 触发
       - master
       - dev
 
@@ -75,6 +76,7 @@ jobs:
             ./src-tauri/target/${{ matrix.target }}/release/bundle/rpm/*.rpm
 
   upload-to-release-alpha:
+    if: github.ref == 'refs/heads/dev'
     name: 📤 上传到 alpha 版本 (Upload to alpha release)
     needs: commit-build
     runs-on: ubuntu-22.04
@@ -97,6 +99,7 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           tag: alpha
+          body: ${{ github.event.head_commit.message }}
           allowUpdates: true
           removeArtifacts: true
           prerelease: true
@@ -104,8 +107,8 @@ jobs:
             ./download/**/*.*
 
   check-version:
-    name: 🛠️ 检查版本号
     if: ${{github.ref == 'refs/heads/master'}}
+    name: 🛠️ 检查版本号
     runs-on: ubuntu-22.04
     steps:
       - name: 克隆当前仓库 (Clone current repo)

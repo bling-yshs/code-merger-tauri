@@ -12,18 +12,20 @@
 import { Moon, Sunny } from '@element-plus/icons-vue'
 import { useDark } from '@vueuse/core'
 import { onMounted } from 'vue'
-import { Store } from '@tauri-apps/plugin-store'
 import { relaunch } from '@tauri-apps/plugin-process'
 import { ElMessageBox } from 'element-plus'
+import { createStore } from '@tauri-apps/plugin-store'
 
 const isDark = useDark()
-const store = new Store('code-merger-tauri.bin')
+
 onMounted(async () => {
-  isDark.value = (await store.get('isDark')) || false
+  const store = await createStore('code-merger-tauri.bin')
+  isDark.value = (await store.get<boolean>('isDark')) || false
 })
 
 const toggleDark = async () => {
   isDark.value = !isDark.value
+  const store = await createStore('code-merger-tauri.bin')
   await store.set('isDark', isDark.value)
   await store.save()
   let b = await askRelaunch()

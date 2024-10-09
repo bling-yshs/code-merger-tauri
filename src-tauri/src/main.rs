@@ -1,14 +1,16 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use std::fs::File;
 use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::{fs, io};
 
 use serde_json::{json, Value};
-use tauri::{Manager, Wry};
+use tauri::Manager;
 use tauri_plugin_os::Version::Semantic;
-use tauri_plugin_store::{with_store, StoreCollection};
+use tauri_plugin_store::StoreExt;
+use tiktoken_rs::o200k_base;
 use walkdir::WalkDir;
 use window_vibrancy::apply_mica;
 
@@ -26,29 +28,45 @@ fn main() {
     );
     tauri::Builder::default()
         .plugin(tauri_plugin_process::init())
-        .plugin(tauri_plugin_store::Builder::new().build())
+        .plugin(tauri_plugin_os::init())
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_clipboard_manager::init())
+        .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_store::Builder::default().build())
         .setup(move |app| {
-            let stores = app.app_handle().state::<StoreCollection<Wry>>();
-            let path = PathBuf::from("code-merger-tauri.bin");
             let mut is_dark = false;
-
-            let _ = with_store(app.app_handle().clone(), stores, path, |store| {
+            // 得到软件数据存储路径
+            let data_path = app.path().app_data_dir().unwrap();
+            // 创建一个bin文件，用于存储isDark的值
+            let bin_path = data_path.join("code-merger-tauri.bin");
+            // 如果bin文件不存在，则创建一个，否则会报错
+            if !(bin_path.exists()) {
+                File::create(&bin_path).unwrap();
+            }
+            // 创建一个store管理器
+            let store = app.handle().store_builder(bin_path).build();
+            // 从磁盘得到isDark的值
+            if store.has("isDark") {
+                // 如果有值，则取出来，赋值给is_dark
                 is_dark = store
                     .get("isDark")
-                    .unwrap_or(&Value::Null)
+                    .unwrap_or(Value::Null)
                     .as_bool()
                     .unwrap_or(false);
-                store.insert("isDark".to_string(), json!(is_dark))?;
-                store.save()?;
-                Ok(())
-            });
+            } else {
+                // 如果没有值，则设置一个默认值，然后保存到磁盘
+                store.set("isDark", json!(is_dark));
+                store.save().expect("Failed to save store to disk");
+            }
 
+            // 创建主窗口
             let main_window = tauri::WebviewWindowBuilder::new(app, "main", Default::default())
                 .title("code-merger-tauri")
                 .transparent(is_win11)
                 .center()
                 .visible(false)
                 .build()?;
+            // 如果是windows 11，则设置窗口透明，并且应用mica效果
             if is_win11 {
                 let _ = apply_mica(&main_window, Some(is_dark));
             }
@@ -56,14 +74,11 @@ fn main() {
             main_window.set_focus().unwrap();
             Ok(())
         })
-        .plugin(tauri_plugin_os::init())
-        .plugin(tauri_plugin_dialog::init())
-        .plugin(tauri_plugin_clipboard_manager::init())
-        .plugin(tauri_plugin_shell::init())
         .invoke_handler(tauri::generate_handler![
             get_sub_files,
             merge_files,
             is_existing_directory,
+            count_tokens,
             are_files_less_than
         ])
         .run(tauri::generate_context!())
@@ -209,4 +224,13 @@ fn are_files_less_than(paths: Vec<&str>, num: usize) -> DataResponse<bool> {
 #[tauri::command(async)]
 fn is_existing_directory(path: &str) -> DataResponse<bool> {
     DataResponse::success(fs::metadata(path).map(|m| m.is_dir()).unwrap_or(false))
+}
+
+// 通过 tiktoken-rs 计算传入的字符串有多少 token
+#[tauri::command(async)]
+fn count_tokens(content: &str) -> DataResponse<usize> {
+    let bpe = o200k_base().unwrap();
+    let tokens = bpe.encode_with_special_tokens(content);
+    let length = tokens.len();
+    DataResponse::success(length)
 }
