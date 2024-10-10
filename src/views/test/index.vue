@@ -6,9 +6,11 @@
       }
     "
   >
-    123
+  
   </div>
 </template>
 
 <script setup lang="ts">
+
+let a = ''
 </script>

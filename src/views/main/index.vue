@@ -1,6 +1,5 @@
 <template>
   <div class="space-y-14">
-    <el-button @click="test">test</el-button>
     <div>
       <el-alert :closable="false" title="您可以将文件夹拖入任意位置来开始" type="success" />
     </div>
@@ -31,7 +30,7 @@
 
     <!--选择框-->
     <div v-if="showSelect">
-      <select-files v-model:target="needMergedPath" ref="getSelectPathList"></select-files>
+      <select-files v-model:rootPath="needMergedPath" ref="getSelectPathList"></select-files>
     </div>
 
     <div v-if="showMergedResult">
@@ -42,6 +41,13 @@
         placeholder="合并结果"
         resize="none"
       />
+    </div>
+
+    <!-- Right aligned settings button -->
+    <div style="position: relative">
+      <el-button @click="$router.push('/settings')" style="position: absolute; top: 0; right: 0">
+        设置
+      </el-button>
     </div>
   </div>
 </template>
@@ -60,11 +66,6 @@ import { useRequest } from 'vue-request'
 import MergeFilesRequest from '@/interface/merge-files-request.ts'
 
 const needMergedPath = ref<string>('')
-
-async function test() {
-  console.log('test')
-  getSelectPathList.value.printAllNodes()
-}
 
 // 监听拖拽事件
 onMounted(() => {
@@ -107,8 +108,7 @@ async function doStartMerge() {
   }
   const rootPath = needMergedPath.value
   const excludeExts = getExcludeList.value.getExcludeList()
-  const excludePaths = new Array<string>()
-  // todo 这里换乘循环获取选中的节点然后发送到rust
+  const excludePaths = getSelectPathList.value.getNoSelectPathList()
   let request = new MergeFilesRequest(rootPath, excludeExts, excludePaths)
   let mergeRes: DataResponse<string> = await invoke('merge_files', {
     request: request

@@ -3,7 +3,7 @@
     ref="treeRef"
     :props="props"
     node-key="path"
-    :default-checked-keys="[target]"
+    :default-checked-keys="[rootPath]"
     :load="loadNode"
     lazy
     show-checkbox
@@ -37,11 +37,11 @@ const props = {
 async function loadNode(node: Node, resolve: (data: Tree[]) => void) {
   console.log(node)
   if (node.level === 0) {
-    return resolve([{ name: await basename(target.value), path: target.value, relativePath: '' }])
+    return resolve([
+      { name: await basename(rootPath.value), path: rootPath.value, relativePath: '' }
+    ])
   }
-  const rootPath = node.data.path
-  const currentPath = target.value
-  let request = new GetSubFilesRequest(currentPath, rootPath)
+  let request = new GetSubFilesRequest(rootPath.value, node.data.path)
   console.log(request)
   let res: DataResponse<Array<MyFile>> = await invoke('get_sub_files', {
     request: request
@@ -61,7 +61,7 @@ async function loadNode(node: Node, resolve: (data: Tree[]) => void) {
   return resolve(data)
 }
 
-let target = defineModel<string>('target', {
+let rootPath = defineModel<string>('rootPath', {
   required: true
 })
 
@@ -89,10 +89,31 @@ function isSubPath(parent: string, child: string): boolean {
   }
 }
 
+function getAllNodeList(node: Node): Array<Node> {
+  let result = new Array<Node>()
+  result.push(node)
+  for (let child of node.childNodes) {
+    result.push(...getAllNodeList(child))
+  }
+  return result
+}
+
+function getNoSelectPathList(): Array<string> {
+  let node = treeRef.value?.getNode(rootPath.value)
+  if (!node) {
+    return []
+  }
+  let allNodeList = getAllNodeList(node)
+
+  return allNodeList
+    .filter((each) => !each.indeterminate && !each.checked)
+    .map((each) => each.data.path)
+  // console.log(allNodeList)
+  // return []
+}
+
 defineExpose({
   getSelectPathList,
-  printAllNodes() {
-    console.log(treeRef.value?.data)
-  }
+  getNoSelectPathList
 })
 </script>
