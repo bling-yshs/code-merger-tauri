@@ -30,7 +30,7 @@
 
     <!--选择框-->
     <div v-if="showSelect">
-      <select-files v-model:target="needMergedPath" ref="getSelectPathList"></select-files>
+      <select-files v-model:rootPath="needMergedPath" ref="getSelectPathList"></select-files>
     </div>
 
     <div v-if="showMergedResult">
@@ -41,6 +41,13 @@
         placeholder="合并结果"
         resize="none"
       />
+    </div>
+
+    <!-- Right aligned settings button -->
+    <div style="position: relative">
+      <el-button @click="$router.push('/settings')" style="position: absolute; top: 0; right: 0">
+        设置
+      </el-button>
     </div>
   </div>
 </template>
@@ -56,6 +63,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import ExcludeExtension from '@/compoments/exclude-extension.vue'
 import { listen } from '@tauri-apps/api/event'
 import { useRequest } from 'vue-request'
+import MergeFilesRequest from '@/interface/merge-files-request.ts'
 
 const needMergedPath = ref<string>('')
 
@@ -85,8 +93,8 @@ async function doStartMerge() {
   }
   showMergedResult.value = false
   mergedString.value = ''
-  const selectPathList: Array<string> = getSelectPathList.value.getSelectPathList()
-  const res: DataResponse<boolean> = await invoke('are_files_less_than', {
+  let selectPathList: Array<string> = getSelectPathList.value.getSelectPathList()
+  let res: DataResponse<boolean> = await invoke('are_files_less_than', {
     paths: selectPathList,
     num: CONFIRM_NUM
   })
@@ -98,16 +106,18 @@ async function doStartMerge() {
       return
     }
   }
-  for (const path of selectPathList) {
-    const mergeRes: DataResponse<string> = await invoke('merge_files', {
-      path,
-      exclude: getExcludeList.value.getExcludeList()
-    })
-    if (!mergeRes.success) {
-      continue
-    }
-    mergedString.value += mergeRes.data
+  const rootPath = needMergedPath.value
+  const excludeExts = getExcludeList.value.getExcludeList()
+  const excludePaths = getSelectPathList.value.getNoSelectPathList()
+  let request = new MergeFilesRequest(rootPath, excludeExts, excludePaths)
+  let mergeRes: DataResponse<string> = await invoke('merge_files', {
+    request: request
+  })
+  if (!mergeRes.success) {
+    ElMessage.error(mergeRes.message)
+    return
   }
+  mergedString.value = mergeRes.data
   showMergedResult.value = true
 }
 
@@ -126,7 +136,6 @@ async function confirmMerge(num: number): Promise<boolean> {
       cancelButtonText: '取消',
       type: 'warning'
     })
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (e) {
     return false
   }
@@ -141,7 +150,7 @@ const mergedString = ref<string>('')
 
 // 监听 needMergedPath 的变化，实时显示选择树
 watch(needMergedPath, async () => {
-  const res: DataResponse<boolean> = await invoke('is_existing_directory', {
+  let res: DataResponse<boolean> = await invoke('is_existing_directory', {
     path: needMergedPath.value
   })
   if (!res.success) {
@@ -160,12 +169,12 @@ watch(needMergedPath, async () => {
 // 复制结果到剪贴板
 async function copyResult() {
   await writeText(mergedString.value)
-  const tokens = await countTokens(mergedString.value)
+  let tokens = await countTokens(mergedString.value)
   ElMessage.success(`已将结果复制到剪贴板，共计 ${tokens} 个 Tokens`)
 }
 
 async function countTokens(content: string): Promise<number> {
-  const res: DataResponse<number> = await invoke('count_tokens', {
+  let res: DataResponse<number> = await invoke('count_tokens', {
     content
   })
   if (!res.success) {

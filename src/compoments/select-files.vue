@@ -3,7 +3,7 @@
     ref="treeRef"
     :props="props"
     node-key="path"
-    :default-checked-keys="[target]"
+    :default-checked-keys="[rootPath]"
     :load="loadNode"
     lazy
     show-checkbox
@@ -17,12 +17,14 @@ import { invoke } from '@tauri-apps/api/core'
 import type MyFile from '@/interface/my-file'
 import { ElTree } from 'element-plus'
 import { ref } from 'vue'
+import GetSubFilesRequest from '@/interface/get-sub-files-request.ts'
 
 const treeRef = ref<InstanceType<typeof ElTree>>()
 
 interface Tree {
   name: string
   path: string
+  relativePath: string
   leaf?: boolean
 }
 
@@ -33,25 +35,33 @@ const props = {
 }
 
 async function loadNode(node: Node, resolve: (data: Tree[]) => void) {
+  console.log(node)
   if (node.level === 0) {
-    return resolve([{ name: await basename(target.value), path: target.value }])
+    return resolve([
+      { name: await basename(rootPath.value), path: rootPath.value, relativePath: '' }
+    ])
   }
-  const res: DataResponse<Array<MyFile>> = await invoke('get_sub_files', { path: node.data.path })
+  let request = new GetSubFilesRequest(rootPath.value, node.data.path)
+  console.log(request)
+  let res: DataResponse<Array<MyFile>> = await invoke('get_sub_files', {
+    request: request
+  })
   if (!res.success) {
     return
   }
   const data: Tree[] = []
-  for (const item of res.data) {
+  for (let item of res.data) {
     data.push({
       name: await basename(item.path),
       path: item.path,
+      relativePath: item.relativePath,
       leaf: item.isFolderEmpty || !item.isFolder
     })
   }
   return resolve(data)
 }
 
-const target = defineModel<string>('target', {
+let rootPath = defineModel<string>('rootPath', {
   required: true
 })
 
@@ -79,7 +89,31 @@ function isSubPath(parent: string, child: string): boolean {
   }
 }
 
+function getAllNodeList(node: Node): Array<Node> {
+  let result = new Array<Node>()
+  result.push(node)
+  for (let child of node.childNodes) {
+    result.push(...getAllNodeList(child))
+  }
+  return result
+}
+
+function getNoSelectPathList(): Array<string> {
+  let node = treeRef.value?.getNode(rootPath.value)
+  if (!node) {
+    return []
+  }
+  let allNodeList = getAllNodeList(node)
+
+  return allNodeList
+    .filter((each) => !each.indeterminate && !each.checked)
+    .map((each) => each.data.path)
+  // console.log(allNodeList)
+  // return []
+}
+
 defineExpose({
-  getSelectPathList
+  getSelectPathList,
+  getNoSelectPathList
 })
 </script>
