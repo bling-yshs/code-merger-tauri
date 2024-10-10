@@ -3,7 +3,7 @@
 
 use std::fs::File;
 use std::io::Read;
-use std::path::{Path, PathBuf};
+use std::path::{Path, PathBuf, StripPrefixError};
 use std::{fs, io};
 
 use serde_json::{json, Value};
@@ -16,8 +16,8 @@ use window_vibrancy::apply_mica;
 
 use crate::data_response::DataResponse;
 use crate::my_file::MyFile;
+use requests::get_sub_files_request::GetSubFilesRequest;
 use requests::merge_files_reqeust::MergeFilesRequest;
-
 mod data_response;
 mod my_file;
 mod requests;
@@ -87,16 +87,16 @@ fn main() {
         .expect("error while running tauri application");
 }
 
-// 输入一个文件夹路径，得到该路径下的所有文件和文件夹的路径，并判断子文件夹是否为空
+// 输入一个文件夹路径，得到当前文件夹下的一级文件和文件夹的相对路径，完整路径，以及是否为文件夹，是否为空文件夹
 #[tauri::command(async)]
-fn get_sub_files(path: &str) -> DataResponse<Vec<MyFile>> {
-    if !Path::new(path).exists() {
+fn get_sub_files(request: GetSubFilesRequest) -> DataResponse<Vec<MyFile>> {
+    if !Path::new(request.current_path.as_str()).exists() {
         return DataResponse::failure("文件夹不存在".to_string());
     }
 
     let mut files = Vec::new();
 
-    match fs::read_dir(path) {
+    match fs::read_dir(request.current_path.as_str()) {
         Ok(entries) => {
             for entry in entries.filter_map(Result::ok) {
                 let path = entry.path();
@@ -110,7 +110,18 @@ fn get_sub_files(path: &str) -> DataResponse<Vec<MyFile>> {
                 } else {
                     false
                 };
-                files.push(MyFile::new(&path_str, is_folder, is_folder_empty));
+                // 计算相对路径
+                let relative_path = path
+                    .strip_prefix(&PathBuf::from(&request.root_path))
+                    .unwrap()
+                    .to_str()
+                    .unwrap();
+                files.push(MyFile::new(
+                    &path_str,
+                    relative_path,
+                    is_folder,
+                    is_folder_empty,
+                ));
             }
         }
         Err(_) => {
@@ -144,41 +155,42 @@ fn merge_files(request: MergeFilesRequest) -> DataResponse<String> {
     // 定义一个结果字符串
     let mut res = String::new();
     for entry in walker
-    .filter_entry(|each| !contains_specific_folder(each))
-    .filter_map(|entry| entry.ok())
-    .filter(|each| each.path().is_file())
-     {
-        match entry {
-            Ok(each) => {
-                // 遍历文件夹下的所有文件，如果是文件，则读取文件内容，然后合并到一个字符串中
-                if each.path().is_file() {
-                    // 检查文件后缀是否在排除列表中
-                    if let Some(ext) = each.path().extension().and_then(|e| e.to_str()) {
-                        if request.exclude_exts.contains(&ext.to_lowercase()) {
-                            continue;
-                        }
-                    }
-                    // 读取文件内容
-                    match read_file_to_string(each.path()) {
-                        Ok(content) => {
-                            res.push_str(format!("> {}\n", each.path().to_string_lossy()).as_str());
-                            res.push_str("```\n");
-                            res.push_str(&content);
-                            res.push_str("\n```\n");
-                        }
-                        Err(_) => {
-                            res.push_str(format!("> {}\n", each.path().to_string_lossy()).as_str());
-                            res.push_str("```\n");
-                            res.push_str("该文件是二进制文件，具体内容已忽略");
-                            res.push_str("\n```\n");
-                        }
-                    }
-                };
+        // 过滤掉在排除列表中的文件夹
+        .filter_entry(|each| !contains_specific_folder(each))
+        .filter_map(|entry| entry.ok())
+        // 过滤掉非文件
+        .filter(|each| each.path().is_file())
+        // 过滤掉在排除列表中的文件扩展名
+        .filter(|each| {
+            each.path()
+                .extension()
+                .and_then(|e| e.to_str())
+                .map(|ext| !request.exclude_exts.contains(&ext.to_string()))
+                .unwrap_or(false)
+        })
+    {
+        // 读取文件内容
+        match read_file_to_string(entry.path()) {
+            Ok(content) => {
+                let relative_path = entry
+                    .path()
+                    .strip_prefix(&request.root_path)
+                    .unwrap()
+                    .to_str()
+                    .unwrap();
+                res.push_str(format!("> {}\n", relative_path).as_str());
+                res.push_str("```\n");
+                res.push_str(&content);
+                res.push_str("\n```\n");
             }
-            Err(_) => {}
+            Err(_) => {
+                res.push_str(format!("> {}\n", entry.path().to_string_lossy()).as_str());
+                res.push_str("```\n");
+                res.push_str("该文件是二进制文件，具体内容已忽略");
+                res.push_str("\n```\n");
+            }
         }
     }
-
     if res.is_empty() {
         return DataResponse::failure("该文件夹下没有任何可读文件".to_string());
     }

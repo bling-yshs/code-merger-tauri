@@ -1,5 +1,6 @@
 <template>
   <div class="space-y-14">
+    <el-button @click="test">test</el-button>
     <div>
       <el-alert :closable="false" title="您可以将文件夹拖入任意位置来开始" type="success" />
     </div>
@@ -56,8 +57,14 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import ExcludeExtension from '@/compoments/exclude-extension.vue'
 import { listen } from '@tauri-apps/api/event'
 import { useRequest } from 'vue-request'
+import MergeFilesRequest from '@/interface/merge-files-request.ts'
 
 const needMergedPath = ref<string>('')
+
+async function test() {
+  console.log('test')
+  getSelectPathList.value.printAllNodes()
+}
 
 // 监听拖拽事件
 onMounted(() => {
@@ -98,16 +105,19 @@ async function doStartMerge() {
       return
     }
   }
-  for (let path of selectPathList) {
-    let mergeRes: DataResponse<string> = await invoke('merge_files', {
-      path,
-      exclude: getExcludeList.value.getExcludeList()
-    })
-    if (!mergeRes.success) {
-      continue
-    }
-    mergedString.value += mergeRes.data
+  const rootPath = needMergedPath.value
+  const excludeExts = getExcludeList.value.getExcludeList()
+  const excludePaths = new Array<string>()
+  // todo 这里换乘循环获取选中的节点然后发送到rust
+  let request = new MergeFilesRequest(rootPath, excludeExts, excludePaths)
+  let mergeRes: DataResponse<string> = await invoke('merge_files', {
+    request: request
+  })
+  if (!mergeRes.success) {
+    ElMessage.error(mergeRes.message)
+    return
   }
+  mergedString.value = mergeRes.data
   showMergedResult.value = true
 }
 

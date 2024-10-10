@@ -17,12 +17,14 @@ import { invoke } from '@tauri-apps/api/core'
 import type MyFile from '@/interface/my-file'
 import { ElTree } from 'element-plus'
 import { ref } from 'vue'
+import GetSubFilesRequest from '@/interface/get-sub-files-request.ts'
 
 const treeRef = ref<InstanceType<typeof ElTree>>()
 
 interface Tree {
   name: string
   path: string
+  relativePath: string
   leaf?: boolean
 }
 
@@ -33,10 +35,17 @@ const props = {
 }
 
 async function loadNode(node: Node, resolve: (data: Tree[]) => void) {
+  console.log(node)
   if (node.level === 0) {
-    return resolve([{ name: await basename(target.value), path: target.value }])
+    return resolve([{ name: await basename(target.value), path: target.value, relativePath: '' }])
   }
-  let res: DataResponse<Array<MyFile>> = await invoke('get_sub_files', { path: node.data.path })
+  const rootPath = node.data.path
+  const currentPath = target.value
+  let request = new GetSubFilesRequest(currentPath, rootPath)
+  console.log(request)
+  let res: DataResponse<Array<MyFile>> = await invoke('get_sub_files', {
+    request: request
+  })
   if (!res.success) {
     return
   }
@@ -45,6 +54,7 @@ async function loadNode(node: Node, resolve: (data: Tree[]) => void) {
     data.push({
       name: await basename(item.path),
       path: item.path,
+      relativePath: item.relativePath,
       leaf: item.isFolderEmpty || !item.isFolder
     })
   }
@@ -80,6 +90,9 @@ function isSubPath(parent: string, child: string): boolean {
 }
 
 defineExpose({
-  getSelectPathList
+  getSelectPathList,
+  printAllNodes() {
+    console.log(treeRef.value?.data)
+  }
 })
 </script>
