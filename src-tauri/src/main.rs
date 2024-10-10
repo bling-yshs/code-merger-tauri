@@ -11,14 +11,16 @@ use tauri::Manager;
 use tauri_plugin_os::Version::Semantic;
 use tauri_plugin_store::StoreExt;
 use tiktoken_rs::o200k_base;
-use walkdir::WalkDir;
+use walkdir::{DirEntry, WalkDir};
 use window_vibrancy::apply_mica;
 
 use crate::data_response::DataResponse;
 use crate::my_file::MyFile;
+use requests::merge_files_reqeust::MergeFilesRequest;
 
 mod data_response;
 mod my_file;
+mod requests;
 
 fn main() {
     // 判断是不是 windows 11，如果是则设置窗口透明
@@ -121,53 +123,59 @@ fn get_sub_files(path: &str) -> DataResponse<Vec<MyFile>> {
 
 // 合并文件夹下的所有文件内容
 #[tauri::command(async)]
-fn merge_files(path: &str, exclude: Option<Vec<String>>) -> DataResponse<String> {
-    if !Path::new(path).exists() {
+fn merge_files(request: MergeFilesRequest) -> DataResponse<String> {
+    // 检查文件夹是否存在
+    if !Path::new(&request.root_path.as_str()).exists() {
         return DataResponse::failure("文件夹不存在".to_string());
     }
-
-    let mut res = String::new();
-    let exclude: Vec<String> = exclude
-        .unwrap_or_default()
-        .into_iter()
-        .map(|ext| ext.to_lowercase())
-        .collect();
-
-    let paths = if Path::new(path).is_file() {
-        vec![PathBuf::from(path)]
-    } else {
-        WalkDir::new(path)
-            .into_iter()
-            .filter_map(Result::ok)
-            .filter(|entry| entry.path().is_file())
-            .map(|entry| entry.into_path())
-            .collect()
+    // 得到遍历文件夹下的所有文件的迭代器
+    let walker = WalkDir::new(&request.root_path).into_iter();
+    // 定义一个检查函数，用于检查传入的文件夹是否在排除列表中
+    let contains_specific_folder = |entry: &DirEntry| -> bool {
+        request.exclude_paths.iter().any(|each| {
+            entry
+                .path()
+                .to_str()
+                .unwrap()
+                .to_lowercase()
+                .contains(each.to_lowercase().as_str())
+        })
     };
-
-    for path in paths {
-        if let Some(ext) = path
-            .extension()
-            .and_then(|e| e.to_str())
-            .map(|e| e.to_lowercase())
-        {
-            if exclude.contains(&ext) {
-                continue;
+    // 定义一个结果字符串
+    let mut res = String::new();
+    for entry in walker
+    .filter_entry(|each| !contains_specific_folder(each))
+    .filter_map(|entry| entry.ok())
+    .filter(|each| each.path().is_file())
+     {
+        match entry {
+            Ok(each) => {
+                // 遍历文件夹下的所有文件，如果是文件，则读取文件内容，然后合并到一个字符串中
+                if each.path().is_file() {
+                    // 检查文件后缀是否在排除列表中
+                    if let Some(ext) = each.path().extension().and_then(|e| e.to_str()) {
+                        if request.exclude_exts.contains(&ext.to_lowercase()) {
+                            continue;
+                        }
+                    }
+                    // 读取文件内容
+                    match read_file_to_string(each.path()) {
+                        Ok(content) => {
+                            res.push_str(format!("> {}\n", each.path().to_string_lossy()).as_str());
+                            res.push_str("```\n");
+                            res.push_str(&content);
+                            res.push_str("\n```\n");
+                        }
+                        Err(_) => {
+                            res.push_str(format!("> {}\n", each.path().to_string_lossy()).as_str());
+                            res.push_str("```\n");
+                            res.push_str("该文件是二进制文件，具体内容已忽略");
+                            res.push_str("\n```\n");
+                        }
+                    }
+                };
             }
-        }
-
-        match read_file_to_string(&path) {
-            Ok(content) => {
-                res.push_str(format!("> {}\n", path.to_string_lossy()).as_str());
-                res.push_str("```\n");
-                res.push_str(&content);
-                res.push_str("\n```\n");
-            }
-            Err(_) => {
-                res.push_str(format!("> {}\n", path.to_string_lossy()).as_str());
-                res.push_str("```\n");
-                res.push_str("该文件是二进制文件，具体内容已忽略");
-                res.push_str("\n```\n");
-            }
+            Err(_) => {}
         }
     }
 
