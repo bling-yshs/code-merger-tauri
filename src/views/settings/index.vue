@@ -1,12 +1,8 @@
 <template>
   <div>
-    <div>
-      123
-    </div>
+    <exclude-extension />
   </div>
 </template>
 <script setup lang="ts">
-// todo
-
-
+import ExcludeExtension from '@/compoments/exclude-extension.vue'
 </script>

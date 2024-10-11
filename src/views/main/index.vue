@@ -3,9 +3,6 @@
     <div>
       <el-alert :closable="false" title="您可以将文件夹拖入任意位置来开始" type="success" />
     </div>
-    <div>
-      <exclude-extension ref="getExcludeList" />
-    </div>
     <div class="flex gap-10">
       <div>
         <el-button @click="selectMergeFolder">
@@ -42,13 +39,6 @@
         resize="none"
       />
     </div>
-
-    <!-- Right aligned settings button -->
-    <div style="position: relative">
-      <el-button @click="$router.push('/settings')" style="position: absolute; top: 0; right: 0">
-        设置
-      </el-button>
-    </div>
   </div>
 </template>
 
@@ -60,11 +50,12 @@ import SelectFiles from '@/compoments/select-files.vue'
 import { selectFolder } from '@/utils/path-utils'
 import { invoke } from '@tauri-apps/api/core'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import ExcludeExtension from '@/compoments/exclude-extension.vue'
 import { listen } from '@tauri-apps/api/event'
 import { useRequest } from 'vue-request'
 import MergeFilesRequest from '@/interface/merge-files-request.ts'
+import { useConfigStore } from '@/stores/config.ts'
 
+const config = useConfigStore()
 const needMergedPath = ref<string>('')
 
 // 监听拖拽事件
@@ -107,7 +98,7 @@ async function doStartMerge() {
     }
   }
   const rootPath = needMergedPath.value
-  const excludeExts = getExcludeList.value.getExcludeList()
+  const excludeExts = config.excludeExts
   const excludePaths = getSelectPathList.value.getNoSelectPathList()
   let request = new MergeFilesRequest(rootPath, excludeExts, excludePaths)
   let mergeRes: DataResponse<string> = await invoke('merge_files', {
@@ -143,7 +134,6 @@ async function confirmMerge(num: number): Promise<boolean> {
 }
 
 const getSelectPathList = ref()
-const getExcludeList = ref()
 const showMergedResult = ref<boolean>(false)
 const showSelect = ref<boolean>(false)
 const mergedString = ref<string>('')
