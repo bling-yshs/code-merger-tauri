@@ -77,7 +77,6 @@ async function selectMergeFolder() {
 
 // 点击开始合并的逻辑
 async function doStartMerge() {
-  const CONFIRM_NUM = 100
   if (!needMergedPath.value) {
     ElMessage.error('请先选择文件夹')
     return
@@ -85,21 +84,26 @@ async function doStartMerge() {
   showMergedResult.value = false
   mergedString.value = ''
   let selectPathList: Array<string> = getSelectPathList.value.getSelectPathList()
-  let res: DataResponse<boolean> = await invoke('are_files_less_than', {
-    paths: selectPathList,
-    num: CONFIRM_NUM
-  })
-  if (!res.success) {
-    return
-  }
-  if (res.data === false) {
-    if (!(await confirmMerge(CONFIRM_NUM))) {
+  // 如果 remindNum 不为 0，且文件数量大于 remindNum，询问是否继续
+  if (config.remindNum !== 0) {
+    let res: DataResponse<boolean> = await invoke('are_files_less_than', {
+      paths: selectPathList,
+      num: config.remindNum
+    })
+    if (!res.success) {
       return
+    }
+    if (res.data === false) {
+      if (!(await confirmMerge(config.remindNum))) {
+        return
+      }
     }
   }
   const rootPath = needMergedPath.value
   const excludeExts = config.excludeExts
-  const excludePaths = getSelectPathList.value.getNoSelectPathList()
+  const excludePaths = Array.from(
+    new Set([...getSelectPathList.value.getNoSelectPathList(), ...config.excludePaths])
+  )
   let request = new MergeFilesRequest(rootPath, excludeExts, excludePaths)
   let mergeRes: DataResponse<string> = await invoke('merge_files', {
     request: request
