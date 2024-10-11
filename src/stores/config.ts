@@ -1,64 +1,49 @@
 import { defineStore } from 'pinia'
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { createStore } from '@tauri-apps/plugin-store'
+import { useDark, useToggle } from '@vueuse/core'
 
 export const useConfigStore = defineStore('config', () => {
-  const theme = ref<string>('')
   const excludeExts = ref<Array<string>>([])
   const excludePaths = ref<Array<string>>([])
   const remindNum = ref<number>(0)
   const enableGitignore = ref<boolean>(false)
-
-  watch(enableGitignore, async (value) => {
-    const dbStore = await createStore('code-merger-tauri.bin')
-    await dbStore.set('enableGitignore', value)
-    await dbStore.save()
+  const isDark = useDark()
+  const theme = computed(() => {
+    return isDark.value === true ? 'dark' : 'light'
   })
+  
+  // action
+  const toggleTheme = useToggle(isDark)
 
-  watch(remindNum, async (value) => {
-    const dbStore = await createStore('code-merger-tauri.bin')
-    await dbStore.set('remindNum', value)
-    await dbStore.save()
-  })
+  // 通用的 watch 和保存逻辑
+  const watchAndSave = (source: any, key: string, options = {}) => {
+    watch(
+      source,
+      async (value) => {
+        const dbStore = await createStore('code-merger-tauri.bin')
+        await dbStore.set(key, value)
+        await dbStore.save()
+      },
+      options
+    )
+  }
 
-  watch(theme, async (value) => {
-    const dbStore = await createStore('code-merger-tauri.bin')
-    await dbStore.set('theme', value)
-    await dbStore.save()
-  })
-
-  watch(
-    excludeExts,
-    async (value) => {
-      const dbStore = await createStore('code-merger-tauri.bin')
-      await dbStore.set('excludeExts', value)
-      await dbStore.save()
-    },
-    {
-      deep: true
-    }
-  )
-
-  watch(
-    excludePaths,
-    async (value) => {
-      const dbStore = await createStore('code-merger-tauri.bin')
-      await dbStore.set('excludePaths', value)
-      await dbStore.save()
-    },
-    {
-      deep: true
-    }
-  )
-  return { theme, excludeExts, excludePaths, remindNum, enableGitignore }
+  // 使用通用的 watch 函数
+  watchAndSave(enableGitignore, 'enableGitignore')
+  watchAndSave(remindNum, 'remindNum')
+  watchAndSave(theme, 'theme')
+  watchAndSave(excludeExts, 'excludeExts', { deep: true })
+  watchAndSave(excludePaths, 'excludePaths', { deep: true })
+  return { theme, excludeExts, excludePaths, remindNum, enableGitignore, isDark, toggleTheme }
 })
 
 export const initConfigStore = async () => {
   const dbStore = await createStore('code-merger-tauri.bin')
   const configStore = useConfigStore()
-  configStore.theme = (await dbStore.get('theme')) || 'light'
+  configStore.isDark = (await dbStore.get('theme')) === 'dark'
   configStore.excludeExts = (await dbStore.get('excludeExts')) || new Array<string>()
   configStore.excludePaths = (await dbStore.get('excludePaths')) || new Array<string>()
-  configStore.remindNum = (await dbStore.get('remindNum')) || 0
+  configStore.remindNum = (await dbStore.get('remindNum')) || 100
   configStore.enableGitignore = (await dbStore.get('enableGitignore')) || false
 }

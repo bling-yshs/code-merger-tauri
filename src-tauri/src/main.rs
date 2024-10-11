@@ -63,7 +63,7 @@ fn main() {
                 .as_str()
                 .unwrap_or("light")
                 .to_string();
-            store.save();
+            let _ = store.save();
             // 创建主窗口
             let main_window = tauri::WebviewWindowBuilder::new(app, "main", Default::default())
                 .title("code-merger-tauri")
