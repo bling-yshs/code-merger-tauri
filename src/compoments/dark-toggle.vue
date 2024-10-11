@@ -1,9 +1,9 @@
 <template>
   <el-button class="fixed bottom-20 right-20" circle @click="toggleDark">
-    <el-icon v-if="!isDark">
+    <el-icon v-if="config.theme === 'dark'">
       <Sunny />
     </el-icon>
-    <el-icon v-if="isDark">
+    <el-icon v-if="config.theme === 'light'">
       <Moon />
     </el-icon>
   </el-button>
@@ -14,21 +14,18 @@ import { useDark } from '@vueuse/core'
 import { onMounted } from 'vue'
 import { relaunch } from '@tauri-apps/plugin-process'
 import { ElMessageBox } from 'element-plus'
-import { createStore } from '@tauri-apps/plugin-store'
+import { useConfigStore } from '@/stores/config.ts'
+
+let config = useConfigStore()
 
 const isDark = useDark()
 
-onMounted(async () => {
-  const store = await createStore('code-merger-tauri.bin')
-  isDark.value = (await store.get<boolean>('isDark')) || false
-})
+onMounted(async () => {})
 
 const toggleDark = async () => {
   isDark.value = !isDark.value
-  const store = await createStore('code-merger-tauri.bin')
-  await store.set('isDark', isDark.value)
-  await store.save()
-  const b = await askRelaunch()
+  config.theme = isDark.value ? 'dark' : 'light'
+  let b = await askRelaunch()
   if (!b) {
     return
   }
@@ -43,12 +40,9 @@ async function askRelaunch(): Promise<boolean> {
       cancelButtonText: '取消',
       type: 'warning'
     })
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (e) {
     return false
   }
   return true
 }
 </script>
-
-<style scoped></style>

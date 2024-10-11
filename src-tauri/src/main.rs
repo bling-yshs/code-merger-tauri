@@ -3,10 +3,10 @@
 
 use std::fs::File;
 use std::io::Read;
-use std::path::{Path, PathBuf, StripPrefixError};
+use std::path::{Path, PathBuf};
 use std::{fs, io};
 
-use serde_json::{json, Value};
+use serde_json::Value;
 use tauri::Manager;
 use tauri_plugin_os::Version::Semantic;
 use tauri_plugin_store::StoreExt;
@@ -36,10 +36,9 @@ fn main() {
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_store::Builder::default().build())
         .setup(move |app| {
-            let mut is_dark = false;
             // 得到软件数据存储路径
             let data_path = app.path().app_data_dir().unwrap();
-            // 创建一个bin文件，用于存储isDark的值
+            // 创建一个bin文件，用于存储本地数据
             let bin_path = data_path.join("code-merger-tauri.bin");
             // 如果bin文件不存在，则创建一个，否则会报错
             if !(bin_path.exists()) {
@@ -47,20 +46,24 @@ fn main() {
             }
             // 创建一个store管理器
             let store = app.handle().store_builder(bin_path).build();
-            // 从磁盘得到isDark的值
-            if store.has("isDark") {
-                // 如果有值，则取出来，赋值给is_dark
-                is_dark = store
-                    .get("isDark")
-                    .unwrap_or(Value::Null)
-                    .as_bool()
-                    .unwrap_or(false);
-            } else {
-                // 如果没有值，则设置一个默认值，然后保存到磁盘
-                store.set("isDark", json!(is_dark));
-                store.save().expect("Failed to save store to disk");
+            // 旧版本兼容
+            let is_dark = store
+                .get("isDark")
+                .unwrap_or(Value::Null)
+                .as_bool()
+                .unwrap_or(false);
+            store.delete("isDark");
+            if is_dark {
+                store.set("theme", "dark");
             }
-
+            // 从磁盘得到isDark的值
+            let theme = store
+                .get("theme")
+                .unwrap_or(Value::Null)
+                .as_str()
+                .unwrap_or("light")
+                .to_string();
+            store.save();
             // 创建主窗口
             let main_window = tauri::WebviewWindowBuilder::new(app, "main", Default::default())
                 .title("code-merger-tauri")
@@ -70,6 +73,7 @@ fn main() {
                 .build()?;
             // 如果是windows 11，则设置窗口透明，并且应用mica效果
             if is_win11 {
+                let is_dark = theme == "dark";
                 let _ = apply_mica(&main_window, Some(is_dark));
             }
             main_window.show().unwrap();
