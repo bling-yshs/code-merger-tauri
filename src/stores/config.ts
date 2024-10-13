@@ -6,8 +6,8 @@ import { useDark, useToggle } from '@vueuse/core'
 export const useConfigStore = defineStore('config', () => {
   const excludeExts = ref<Array<string>>([])
   const excludePaths = ref<Array<string>>([])
-  const remindNum = ref<number>(0)
-  const enableGitignore = ref<boolean>(false)
+  const remindNum = ref(0)
+  const enableGitignore = ref(false)
   const isDark = useDark()
   const theme = computed(() => {
     return isDark.value === true ? 'dark' : 'light'
