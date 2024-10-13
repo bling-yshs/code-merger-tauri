@@ -65,12 +65,16 @@ fn main() {
                 .to_string();
             let _ = store.save();
             // 创建主窗口
-            let main_window = tauri::WebviewWindowBuilder::new(app, "main", Default::default())
-                .title("code-merger-tauri")
-                .transparent(is_win11)
-                .center()
-                .visible(false)
-                .build()?;
+            let main_window = tauri::WebviewWindowBuilder::new(
+                app,
+                "main",
+                tauri::WebviewUrl::App("index.html".into()),
+            )
+            .title("code-merger-tauri")
+            .transparent(is_win11)
+            .center()
+            .visible(false)
+            .build()?;
             // 如果是windows 11，则设置窗口透明，并且应用mica效果
             if is_win11 {
                 let is_dark = theme == "dark";

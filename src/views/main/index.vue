@@ -12,12 +12,7 @@
           <span>选择文件夹</span>
         </el-button>
       </div>
-      <el-input placeholder="或者手动输入路径" v-model="needMergedPath" />
-      <div>
-        <el-button type="primary" @click="startMergeRun" :loading="startMergeLoading">
-          <span>开始合并</span>
-        </el-button>
-      </div>
+      <input-merge-path />
       <div>
         <el-button type="primary" @click="copyResult">
           <span>复制结果</span>
@@ -26,13 +21,13 @@
     </div>
 
     <!--选择框-->
-    <div v-if="showSelect">
-      <select-files v-model:rootPath="needMergedPath" ref="getSelectPathList"></select-files>
+    <div v-if="global.showSelectTree">
+      <select-files />
     </div>
 
-    <div v-if="showMergedResult">
+    <div v-if="global.showMergeResult">
       <el-input
-        v-model="mergedString"
+        v-model="global.mergeResult"
         type="textarea"
         autosize
         placeholder="合并结果"
@@ -43,20 +38,18 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, onMounted, ref, watch } from 'vue'
+import { onMounted } from 'vue'
 import { FolderOpened } from '@element-plus/icons-vue'
 import { writeText } from '@tauri-apps/plugin-clipboard-manager'
 import SelectFiles from '@/compoments/select-files.vue'
 import { selectFolder } from '@/utils/path-utils'
 import { invoke } from '@tauri-apps/api/core'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import { listen } from '@tauri-apps/api/event'
-import { useRequest } from 'vue-request'
-import MergeFilesRequest from '@/interface/merge-files-request.ts'
-import { useConfigStore } from '@/stores/config.ts'
+import { useGlobalStore } from '@/stores/global.ts'
+import InputMergePath from '@/compoments/input-merge-path.vue'
 
-const config = useConfigStore()
-const needMergedPath = ref<string>('')
+const global = useGlobalStore()
 
 // 监听拖拽事件
 onMounted(() => {
@@ -66,104 +59,19 @@ onMounted(() => {
       ElMessage.error('只能选择一个文件夹')
       return
     }
-    needMergedPath.value = event.payload.paths[0]
+    global.pathToMerge = event.payload.paths[0]
   })
 })
 
 // 选择文件夹
 async function selectMergeFolder() {
-  needMergedPath.value = await selectFolder()
+  global.pathToMerge = await selectFolder()
 }
-
-// 点击开始合并的逻辑
-async function doStartMerge() {
-  if (!needMergedPath.value) {
-    ElMessage.error('请先选择文件夹')
-    return
-  }
-  showMergedResult.value = false
-  mergedString.value = ''
-  let selectPathList: Array<string> = getSelectPathList.value.getSelectPathList()
-  // 如果 remindNum 不为 0，且文件数量大于 remindNum，询问是否继续
-  if (config.remindNum !== 0) {
-    let res: DataResponse<boolean> = await invoke('are_files_less_than', {
-      paths: selectPathList,
-      num: config.remindNum
-    })
-    if (!res.success) {
-      return
-    }
-    if (res.data === false) {
-      if (!(await confirmMerge(config.remindNum))) {
-        return
-      }
-    }
-  }
-  const rootPath = needMergedPath.value
-  const excludeExts = config.excludeExts
-  const excludePaths = Array.from(
-    new Set([...getSelectPathList.value.getNoSelectPathList(), ...config.excludePaths])
-  )
-  let request = new MergeFilesRequest(rootPath, excludeExts, excludePaths)
-  let mergeRes: DataResponse<string> = await invoke('merge_files', {
-    request: request
-  })
-  if (!mergeRes.success) {
-    ElMessage.error(mergeRes.message)
-    return
-  }
-  mergedString.value = mergeRes.data
-  showMergedResult.value = true
-}
-
-// loadingKeep，防止闪烁
-const { run: startMergeRun, loading: startMergeLoading } = useRequest(doStartMerge, {
-  manual: true,
-  loadingDelay: 400,
-  loadingKeep: 1000
-})
-
-// 确认是否继续合并
-async function confirmMerge(num: number): Promise<boolean> {
-  try {
-    await ElMessageBox.confirm(`当前文件夹的文件数量大于 ${num} ，确定要继续吗?`, '警告', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    })
-  } catch (e) {
-    return false
-  }
-  return true
-}
-
-const getSelectPathList = ref()
-const showMergedResult = ref<boolean>(false)
-const showSelect = ref<boolean>(false)
-const mergedString = ref<string>('')
-
-// 监听 needMergedPath 的变化，实时显示选择树
-watch(needMergedPath, async () => {
-  let res: DataResponse<boolean> = await invoke('is_existing_directory', {
-    path: needMergedPath.value
-  })
-  if (!res.success) {
-    return
-  }
-  if (res.data === false) {
-    return
-  }
-  showMergedResult.value = false
-  // 这里需要重新渲染才能更新树的根节点
-  showSelect.value = false
-  await nextTick()
-  showSelect.value = true
-})
 
 // 复制结果到剪贴板
 async function copyResult() {
-  await writeText(mergedString.value)
-  let tokens = await countTokens(mergedString.value)
+  await writeText(global.mergeResult)
+  let tokens = await countTokens(global.mergeResult)
   ElMessage.success(`已将结果复制到剪贴板，共计 ${tokens} 个 Tokens`)
 }
 

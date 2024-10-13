@@ -3,11 +3,11 @@
     <exclude-extension />
     <exclude-path />
     <div class="flex items-center gap-10">
-      <div class="flex items-center">
-        <span>确认阈值</span>
+      <div class="flex items-center gap-5">
+        <span class="text-14 dark:color-gray-4">确认阈值</span>
         <el-tooltip content="当合并的文件数量超过这个数，则合并时会有二次确认提示框，0表示无限制">
           <el-icon>
-            <QuestionFilled />
+            <QuestionFilled class="color-gray-4" />
           </el-icon>
         </el-tooltip>
       </div>
@@ -17,9 +17,9 @@
         style="width: 100px"
       ></el-input-number>
     </div>
-    <div class="flex items-center gap-10">
-      <span>遵循 .gitignore 文件(开发中，无实际效果)</span>
-      <el-switch v-model="config.enableGitignore" />
+    <div class=" flex items-center gap-10">
+      <span class="text-14 dark:color-gray-4">遵循 .gitignore 文件(开发中，无实际效果)</span>
+      <el-switch size="small" v-model="config.enableGitignore" />
     </div>
   </div>
 </template>
