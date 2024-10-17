@@ -5,8 +5,8 @@
 //     message: String,
 // }
 interface DataResponse<T> {
-  code: number;
-  success: boolean;
-  data: T;
-  message: string;
+  code: number
+  success: boolean
+  data: T
+  message: string
 }

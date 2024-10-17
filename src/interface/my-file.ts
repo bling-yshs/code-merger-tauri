@@ -1,5 +1,6 @@
 export default interface MyFile {
-  path: string;
-  isFolder: boolean;
-  isFolderEmpty: boolean;
+  path: string
+  relativePath: string
+  isFolder: boolean
+  isFolderEmpty: boolean
 }

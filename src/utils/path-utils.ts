@@ -7,9 +7,5 @@ export async function selectFolder(): Promise<string> {
   if (path === null) {
     return ''
   }
-  // 如果是数组
-  if (Array.isArray(path)) {
-    return ''
-  }
   return path
 }
