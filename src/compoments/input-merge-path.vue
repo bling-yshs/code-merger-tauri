@@ -7,14 +7,13 @@
   </div>
 </template>
 <script setup lang="ts">
-
-
 import { useGlobalStore } from '@/stores/global.ts'
 import { useRequest } from 'vue-request'
 import { ElMessage } from 'element-plus'
 import { invoke } from '@tauri-apps/api/core'
 import MergeFilesRequest from '@/interface/merge-files-request.ts'
 import { useConfigStore } from '@/stores/config.ts'
+import AreFilesLessThanRequest from '@/interface/are-files-less-than-request.ts'
 
 const global = useGlobalStore()
 const config = useConfigStore()
@@ -26,7 +25,6 @@ const { run: merge, loading: isMerging } = useRequest(doMerge, {
   loadingKeep: 1000
 })
 
-
 // 点击开始合并的逻辑
 async function doMerge() {
   if (!global.pathToMerge) {
@@ -35,12 +33,24 @@ async function doMerge() {
   }
   global.showMergeResult = false
   global.mergeResult = ''
-  let selectPathList: Array<string> = global.getSelectPathList()
+  const rootPath = global.pathToMerge
+  const excludeExts = config.excludeExts
+  const excludePaths = Array.from(
+    new Set([...global.getNoSelectPathList(), ...config.excludePaths])
+  )
+  const enableGitignore = config.enableGitignore
+  const remindNum = config.remindNum
+  let areFilesLessThanRequest = new AreFilesLessThanRequest(
+    rootPath,
+    remindNum,
+    excludeExts,
+    excludePaths,
+    enableGitignore
+  )
   // 如果 remindNum 不为 0，且文件数量大于 remindNum，询问是否继续
-  if (config.remindNum !== 0) {
+  if (remindNum !== 0) {
     let res: DataResponse<boolean> = await invoke('are_files_less_than', {
-      paths: selectPathList,
-      num: config.remindNum
+      request: areFilesLessThanRequest
     })
     if (!res.success) {
       return
@@ -51,12 +61,6 @@ async function doMerge() {
       }
     }
   }
-  const rootPath = global.pathToMerge
-  const excludeExts = config.excludeExts
-  const excludePaths = Array.from(
-    new Set([...global.getNoSelectPathList(), ...config.excludePaths])
-  )
-  const enableGitignore = config.enableGitignore
   let request = new MergeFilesRequest(rootPath, excludeExts, excludePaths, enableGitignore)
   let mergeRes: DataResponse<string> = await invoke('merge_files', {
     request: request
@@ -68,5 +72,4 @@ async function doMerge() {
   global.mergeResult = mergeRes.data
   global.showMergeResult = true
 }
-
 </script>
