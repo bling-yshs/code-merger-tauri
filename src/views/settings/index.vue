@@ -18,7 +18,7 @@
       ></el-input-number>
     </div>
     <div class=" flex items-center gap-10">
-      <span class="text-14 dark:color-gray-4">遵循 .gitignore 文件(开发中，无实际效果)</span>
+      <span class="text-14 dark:color-gray-4">遵循 .gitignore 文件</span>
       <el-switch size="small" v-model="config.enableGitignore" />
     </div>
   </div>

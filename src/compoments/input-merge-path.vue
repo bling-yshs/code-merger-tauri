@@ -56,7 +56,8 @@ async function doMerge() {
   const excludePaths = Array.from(
     new Set([...global.getNoSelectPathList(), ...config.excludePaths])
   )
-  let request = new MergeFilesRequest(rootPath, excludeExts, excludePaths)
+  const enableGitignore = config.enableGitignore
+  let request = new MergeFilesRequest(rootPath, excludeExts, excludePaths, enableGitignore)
   let mergeRes: DataResponse<string> = await invoke('merge_files', {
     request: request
   })
