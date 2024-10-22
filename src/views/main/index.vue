@@ -85,8 +85,8 @@ async function doStartMerge() {
   }
   showMergedResult.value = false
   mergedString.value = ''
-  let selectPathList: Array<string> = getSelectPathList.value.getSelectPathList()
-  let res: DataResponse<boolean> = await invoke('are_files_less_than', {
+  const selectPathList: Array<string> = getSelectPathList.value.getSelectPathList()
+  const res: DataResponse<boolean> = await invoke('are_files_less_than', {
     paths: selectPathList,
     num: CONFIRM_NUM
   })
@@ -98,8 +98,8 @@ async function doStartMerge() {
       return
     }
   }
-  for (let path of selectPathList) {
-    let mergeRes: DataResponse<string> = await invoke('merge_files', {
+  for (const path of selectPathList) {
+    const mergeRes: DataResponse<string> = await invoke('merge_files', {
       path,
       exclude: getExcludeList.value.getExcludeList()
     })
@@ -126,6 +126,7 @@ async function confirmMerge(num: number): Promise<boolean> {
       cancelButtonText: '取消',
       type: 'warning'
     })
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (e) {
     return false
   }
@@ -140,7 +141,7 @@ const mergedString = ref<string>('')
 
 // 监听 needMergedPath 的变化，实时显示选择树
 watch(needMergedPath, async () => {
-  let res: DataResponse<boolean> = await invoke('is_existing_directory', {
+  const res: DataResponse<boolean> = await invoke('is_existing_directory', {
     path: needMergedPath.value
   })
   if (!res.success) {
@@ -159,12 +160,12 @@ watch(needMergedPath, async () => {
 // 复制结果到剪贴板
 async function copyResult() {
   await writeText(mergedString.value)
-  let tokens = await countTokens(mergedString.value)
+  const tokens = await countTokens(mergedString.value)
   ElMessage.success(`已将结果复制到剪贴板，共计 ${tokens} 个 Tokens`)
 }
 
 async function countTokens(content: string): Promise<number> {
-  let res: DataResponse<number> = await invoke('count_tokens', {
+  const res: DataResponse<number> = await invoke('count_tokens', {
     content
   })
   if (!res.success) {
