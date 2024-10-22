@@ -28,7 +28,7 @@ const toggleDark = async () => {
   const store = await createStore('code-merger-tauri.bin')
   await store.set('isDark', isDark.value)
   await store.save()
-  let b = await askRelaunch()
+  const b = await askRelaunch()
   if (!b) {
     return
   }
@@ -43,6 +43,7 @@ async function askRelaunch(): Promise<boolean> {
       cancelButtonText: '取消',
       type: 'warning'
     })
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (e) {
     return false
   }

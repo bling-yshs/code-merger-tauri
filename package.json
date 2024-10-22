@@ -8,6 +8,7 @@
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
+    "lint": "eslint . --fix",
     "tauri": "tauri",
     "tauri-dev": "tauri dev",
     "tauri-build": "tauri build"
@@ -29,16 +30,15 @@
     "vue-router": "^4.3.2"
   },
   "devDependencies": {
+    "@vue/eslint-config-prettier": "^10.0.0",
+    "@vue/eslint-config-typescript": "^14.0.1",
+    "eslint": "^9.12.0",
+    "eslint-plugin-vue": "^9.29.0",
     "@element-plus/icons-vue": "^2.3.1",
-    "@rushstack/eslint-patch": "^1.8.0",
     "@types/node": "^20.14.1",
     "@unocss/preset-rem-to-px": "^0.59.4",
     "@vitejs/plugin-vue": "^5.0.4",
-    "@vue/eslint-config-prettier": "^9.0.0",
-    "@vue/eslint-config-typescript": "^13.0.0",
     "@vue/tsconfig": "^0.5.1",
-    "eslint": "^8.57.0",
-    "eslint-plugin-vue": "^9.23.0",
     "prettier": "^3.2.5",
     "typescript": "^5.4.5",
     "unplugin-auto-import": "^0.17.6",
