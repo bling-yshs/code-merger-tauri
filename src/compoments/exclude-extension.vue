@@ -31,7 +31,7 @@ const getExcludeList = () => {
   return excludeList.value
 }
 
-const excludeList = useLocalStorage('excludeList', Array<String>)
+const excludeList = useLocalStorage('excludeList', Array<string>)
 
 // 暴露 getExcludeList 方法给父组件
 defineExpose({ getExcludeList })

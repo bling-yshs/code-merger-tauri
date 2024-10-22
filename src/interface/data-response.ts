@@ -1,9 +1,4 @@
-// pub struct DataResponse<T> {
-//     code: u32,
-//     success: bool,
-//     data: Option<T>,
-//     message: String,
-// }
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface DataResponse<T> {
   code: number;
   success: boolean;

@@ -36,12 +36,12 @@ async function loadNode(node: Node, resolve: (data: Tree[]) => void) {
   if (node.level === 0) {
     return resolve([{ name: await basename(target.value), path: target.value }])
   }
-  let res: DataResponse<Array<MyFile>> = await invoke('get_sub_files', { path: node.data.path })
+  const res: DataResponse<Array<MyFile>> = await invoke('get_sub_files', { path: node.data.path })
   if (!res.success) {
     return
   }
   const data: Tree[] = []
-  for (let item of res.data) {
+  for (const item of res.data) {
     data.push({
       name: await basename(item.path),
       path: item.path,
@@ -51,7 +51,7 @@ async function loadNode(node: Node, resolve: (data: Tree[]) => void) {
   return resolve(data)
 }
 
-let target = defineModel<string>('target', {
+const target = defineModel<string>('target', {
   required: true
 })
 
