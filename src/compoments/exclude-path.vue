@@ -7,7 +7,7 @@
     >
     </el-input>
     <div class="flex gap-4">
-      <el-tag v-for="(tag, index) in configStore.excludePaths" :key="index" closable @close="removeTag(index)">
+      <el-tag v-for="(tag, index) in configStore.excludeDirs" :key="index" closable @close="removeTag(index)">
         {{ tag }}
       </el-tag>
     </div>
@@ -24,14 +24,14 @@ let inputBoxValue = ref('')
 async function handleEnter() {
   if (inputBoxValue.value.trim() !== '') {
     // 添加到 excludeList
-    configStore.excludePaths.push(inputBoxValue.value.trim())
+    configStore.excludeDirs.push(inputBoxValue.value.trim())
     // 清空输入框
     inputBoxValue.value = ''
   }
 }
 
 function removeTag(index: number) {
-  configStore.excludePaths.splice(index, 1)
+  configStore.excludeDirs.splice(index, 1)
 }
 
 </script>

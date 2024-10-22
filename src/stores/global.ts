@@ -54,10 +54,12 @@ export const useGlobalStore = defineStore('global', () => {
       return []
     }
     const allNodeList = getAllNodeList(node)
-
-    return allNodeList
+    
+    const res = allNodeList
       .filter((each) => !each.indeterminate && !each.checked)
       .map((each) => each.data.path)
+    console.log(res)
+    return res
   }
 
   const confirmMerge = async (num: number): Promise<boolean> => {
