@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { computed, ref, watch } from 'vue'
+import { computed, ComputedRef, Ref, ref, watch } from 'vue'
 import { createStore } from '@tauri-apps/plugin-store'
 import { useDark, useToggle } from '@vueuse/core'
 
@@ -17,7 +17,7 @@ export const useConfigStore = defineStore('config', () => {
   const toggleTheme = useToggle(isDark)
 
   // 通用的 watch 和保存逻辑
-  const watchAndSave = (source: unknown, key: string, options = {}) => {
+  const watchAndSave = <T>(source: Ref<T> | ComputedRef<T>, key: string, options = {}) => {
     watch(
       source,
       async (value) => {
