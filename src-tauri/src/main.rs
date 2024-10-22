@@ -72,11 +72,11 @@ fn main() {
                 "main",
                 tauri::WebviewUrl::App("index.html".into()),
             )
-            .title("code-merger-tauri")
-            .transparent(is_win11)
-            .center()
-            .visible(false)
-            .build()?;
+                .title("code-merger-tauri")
+                .transparent(is_win11)
+                .center()
+                .visible(false)
+                .build()?;
             // 如果是windows 11，则设置窗口透明，并且应用mica效果
             if is_win11 {
                 let is_dark = theme == "dark";
@@ -161,7 +161,7 @@ fn merge_files(request: MergeFilesRequest) -> DataResponse<String> {
         for entry in walker
             .filter_map(Result::ok)
             .filter(|each| {
-                !is_path_excluded(each.path(), Path::new(root_path), &request.exclude_exts)
+                !is_path_excluded(each.path(),  &request.exclude_paths)
             })
             .filter(|each| each.file_type().map(|ft| ft.is_file()).unwrap_or(false))
             .filter(|each| {
@@ -180,7 +180,7 @@ fn merge_files(request: MergeFilesRequest) -> DataResponse<String> {
                         "> {}\n```\n该文件是二进制文件，具体内容已忽略\n```\n",
                         entry.path().to_string_lossy()
                     )
-                    .as_str(),
+                        .as_str(),
                 );
                 String::new()
             });
@@ -193,7 +193,7 @@ fn merge_files(request: MergeFilesRequest) -> DataResponse<String> {
         for entry in walker
             // 过滤掉在排除列表中的文件夹
             .filter_entry(|each| {
-                !is_path_excluded(each.path(), Path::new(root_path), &request.exclude_paths)
+                !is_path_excluded(each.path(),  &request.exclude_paths)
             })
             .filter_map(Result::ok)
             .filter(|each| each.path().is_file())
@@ -213,7 +213,7 @@ fn merge_files(request: MergeFilesRequest) -> DataResponse<String> {
                         "> {}\n```\n该文件是二进制文件，具体内容已忽略\n```\n",
                         entry.path().to_string_lossy()
                     )
-                    .as_str(),
+                        .as_str(),
                 );
                 String::new()
             });
@@ -260,7 +260,7 @@ fn are_files_less_than(request: AreFilesLessThanRequest) -> DataResponse<bool> {
     if request.enable_gitignore {
         let walker = WalkBuilder::new(&request.root_path).hidden(true).build();
         for entry in walker.filter_map(Result::ok).filter(|each| {
-            !is_path_excluded(each.path(), Path::new(root_path), &request.exclude_paths)
+            !is_path_excluded(each.path(),  &request.exclude_paths)
         }) {
             if entry.file_type().map_or(false, |ft| ft.is_file()) {
                 file_count += 1;
@@ -273,7 +273,7 @@ fn are_files_less_than(request: AreFilesLessThanRequest) -> DataResponse<bool> {
         for entry in WalkDir::new(&request.root_path)
             .into_iter()
             .filter_entry(|each| {
-                !is_path_excluded(each.path(), Path::new(root_path), &request.exclude_paths)
+                !is_path_excluded(each.path(), &request.exclude_paths)
             })
             .filter_map(Result::ok)
         {
@@ -305,12 +305,11 @@ fn count_tokens(content: &str) -> DataResponse<usize> {
 }
 
 // 判断路径是否在排除列表中，如果在则返回true，否则返回false
-fn is_path_excluded(path: &Path, root_path: &Path, exclude_paths: &[String]) -> bool {
+fn is_path_excluded(path: &Path, exclude_paths: &[String]) -> bool {
     exclude_paths.iter().any(|each| {
-        path.strip_prefix(root_path)
-            .ok()
-            .and_then(|p| p.to_str())
-            .map_or(false, |s| s.to_lowercase().contains(&each.to_lowercase()))
+        let exclude_path = Path::new(each);
+        // 检查是否以某个 exclude_path 为前缀
+        path.strip_prefix(exclude_path).is_ok()
     })
 }
 
