@@ -16,11 +16,11 @@ import { relaunch } from '@tauri-apps/plugin-process'
 import { ElMessageBox } from 'element-plus'
 import { useConfigStore } from '@/stores/config.ts'
 
-let config = useConfigStore()
+const config = useConfigStore()
 
 const toggleTheme = async () => {
   config.toggleTheme()
-  let b = await askRelaunch()
+  const b = await askRelaunch()
   if (!b) {
     return
   }
@@ -35,6 +35,7 @@ async function askRelaunch(): Promise<boolean> {
       cancelButtonText: '取消',
       type: 'warning'
     })
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (e) {
     return false
   }

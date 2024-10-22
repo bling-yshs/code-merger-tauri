@@ -17,7 +17,7 @@ export const useConfigStore = defineStore('config', () => {
   const toggleTheme = useToggle(isDark)
 
   // 通用的 watch 和保存逻辑
-  const watchAndSave = (source: any, key: string, options = {}) => {
+  const watchAndSave = (source: unknown, key: string, options = {}) => {
     watch(
       source,
       async (value) => {

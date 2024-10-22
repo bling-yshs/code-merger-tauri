@@ -18,7 +18,7 @@
 import { ref } from 'vue'
 import { useConfigStore } from '@/stores/config.ts'
 
-let configStore = useConfigStore()
+const configStore = useConfigStore()
 
 const inputBoxValue = ref('')
 

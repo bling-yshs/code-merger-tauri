@@ -71,12 +71,12 @@ async function selectMergeFolder() {
 // 复制结果到剪贴板
 async function copyResult() {
   await writeText(global.mergeResult)
-  let tokens = await countTokens(global.mergeResult)
+  const tokens = await countTokens(global.mergeResult)
   ElMessage.success(`已将结果复制到剪贴板，共计 ${tokens} 个 Tokens`)
 }
 
 async function countTokens(content: string): Promise<number> {
-  let res: DataResponse<number> = await invoke('count_tokens', {
+  const res: DataResponse<number> = await invoke('count_tokens', {
     content
   })
   if (!res.success) {

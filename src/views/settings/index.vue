@@ -29,5 +29,5 @@ import ExcludePath from '@/compoments/exclude-path.vue'
 import { useConfigStore } from '@/stores/config.ts'
 import { QuestionFilled } from '@element-plus/icons-vue'
 
-let config = useConfigStore()
+const config = useConfigStore()
 </script>

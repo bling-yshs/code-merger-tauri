@@ -69,6 +69,7 @@ export const useGlobalStore = defineStore('global', () => {
         cancelButtonText: '取消',
         type: 'warning'
       })
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
       return false
     }

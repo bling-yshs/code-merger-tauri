@@ -21,7 +21,7 @@ interface Target {
   path: string
 }
 
-let target = ref<Target>({ name: '设置', path: '/settings' })
+const target = ref<Target>({ name: '设置', path: '/settings' })
 
 function toggle() {
   router.push(target.value.path)

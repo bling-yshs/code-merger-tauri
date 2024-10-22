@@ -19,7 +19,7 @@ import { ref } from 'vue'
 import { useConfigStore } from '@/stores/config.ts'
 
 const configStore = useConfigStore()
-let inputBoxValue = ref('')
+const inputBoxValue = ref('')
 
 async function handleEnter() {
   if (inputBoxValue.value.trim() !== '') {

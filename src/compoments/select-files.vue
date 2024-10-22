@@ -20,7 +20,7 @@ import GetSubFilesRequest from '@/interface/get-sub-files-request.ts'
 import { useGlobalStore } from '@/stores/global.ts'
 import { onMounted, ref } from 'vue'
 
-let global = useGlobalStore()
+const global = useGlobalStore()
 
 const treeRef = ref<InstanceType<typeof ElTree>>()
 
@@ -47,15 +47,15 @@ async function loadNode(node: Node, resolve: (data: Tree[]) => void) {
       { name: await basename(global.pathToMerge), path: global.pathToMerge, relativePath: '' }
     ])
   }
-  let request = new GetSubFilesRequest(global.pathToMerge, node.data.path)
-  let res: DataResponse<Array<MyFile>> = await invoke('get_sub_files', {
+  const request = new GetSubFilesRequest(global.pathToMerge, node.data.path)
+  const res: DataResponse<Array<MyFile>> = await invoke('get_sub_files', {
     request: request
   })
   if (!res.success) {
     return
   }
   const data: Tree[] = []
-  for (let item of res.data) {
+  for (const item of res.data) {
     data.push({
       name: await basename(item.path),
       path: item.path,

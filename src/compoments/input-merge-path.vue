@@ -41,7 +41,7 @@ async function doMerge() {
   const excludeDirs = config.excludeDirs
   const excludeExts = config.excludeExts
   const enableGitignore = config.enableGitignore
-  let areFilesLessThanRequest = new AreFilesLessThanRequest(
+  const areFilesLessThanRequest = new AreFilesLessThanRequest(
     rootPath,
     remindNum,
     noSelectPathList,
@@ -51,7 +51,7 @@ async function doMerge() {
   )
   // 如果 remindNum 不为 0，且文件数量大于 remindNum，询问是否继续
   if (remindNum !== 0) {
-    let res: DataResponse<boolean> = await invoke('are_files_less_than', {
+    const res: DataResponse<boolean> = await invoke('are_files_less_than', {
       request: areFilesLessThanRequest
     })
     if (!res.success) {
@@ -63,7 +63,7 @@ async function doMerge() {
       }
     }
   }
-  let request = new MergeFilesRequest(
+  const request = new MergeFilesRequest(
     rootPath,
     noSelectPathList,
     excludeDirs,
@@ -71,7 +71,7 @@ async function doMerge() {
     enableGitignore
   )
   console.log('request', request)
-  let mergeRes: DataResponse<string> = await invoke('merge_files', {
+  const mergeRes: DataResponse<string> = await invoke('merge_files', {
     request: request
   })
   if (!mergeRes.success) {
