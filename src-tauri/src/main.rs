@@ -161,7 +161,10 @@ fn merge_files(request: MergeFilesRequest) -> DataResponse<String> {
         for entry in walker
             .filter_map(Result::ok)
             .filter(|each| {
-                !is_path_excluded(each.path(),  &request.exclude_paths)
+                !is_path_excluded(each.path(), &request.no_selected_paths)
+            })
+            .filter(|each| {
+                !is_dir_excluded(each.path(), Path::new(root_path), &request.exclude_dirs)
             })
             .filter(|each| each.file_type().map(|ft| ft.is_file()).unwrap_or(false))
             .filter(|each| {
@@ -193,9 +196,12 @@ fn merge_files(request: MergeFilesRequest) -> DataResponse<String> {
         for entry in walker
             // 过滤掉在排除列表中的文件夹
             .filter_entry(|each| {
-                !is_path_excluded(each.path(),  &request.exclude_paths)
+                !is_path_excluded(each.path(), &request.no_selected_paths)
             })
             .filter_map(Result::ok)
+            .filter(|each| {
+                !is_dir_excluded(each.path(), Path::new(root_path), &request.exclude_dirs)
+            })
             .filter(|each| each.path().is_file())
             .filter(|each| {
                 !is_ext_excluded(each.path(), &request.exclude_exts)
@@ -259,9 +265,13 @@ fn are_files_less_than(request: AreFilesLessThanRequest) -> DataResponse<bool> {
 
     if request.enable_gitignore {
         let walker = WalkBuilder::new(&request.root_path).hidden(true).build();
-        for entry in walker.filter_map(Result::ok).filter(|each| {
-            !is_path_excluded(each.path(),  &request.exclude_paths)
-        }) {
+        for entry in walker.filter_map(Result::ok)
+            .filter(|each| {
+                !is_path_excluded(each.path(), &request.exclude_dirs)
+            })
+            .filter(|each| {
+                !is_dir_excluded(each.path(), Path::new(root_path), &request.exclude_dirs)
+            }) {
             if entry.file_type().map_or(false, |ft| ft.is_file()) {
                 file_count += 1;
                 if file_count >= request.num {
@@ -273,9 +283,12 @@ fn are_files_less_than(request: AreFilesLessThanRequest) -> DataResponse<bool> {
         for entry in WalkDir::new(&request.root_path)
             .into_iter()
             .filter_entry(|each| {
-                !is_path_excluded(each.path(), &request.exclude_paths)
+                !is_path_excluded(each.path(), &request.exclude_dirs)
             })
             .filter_map(Result::ok)
+            .filter(|each| {
+                !is_dir_excluded(each.path(), Path::new(root_path), &request.exclude_dirs)
+            })
         {
             if entry.file_type().is_file() {
                 file_count += 1;
@@ -313,8 +326,20 @@ fn is_path_excluded(path: &Path, exclude_paths: &[String]) -> bool {
     })
 }
 
+// 判断路径的扩展名是否在排除列表中，如果在则返回true，否则返回false
 fn is_ext_excluded(path: &Path, exclude_exts: &[String]) -> bool {
     path.extension()
         .and_then(|e| e.to_str())
         .map_or(false, |ext| exclude_exts.contains(&ext.to_string()))
+}
+
+// 判断路径是否在排除列表中，如果在则返回true，否则返回false
+fn is_dir_excluded(path: &Path, root_path: &Path, exclude_dirs: &[String]) -> bool {
+    exclude_dirs.iter().any(|each| {
+        // 去掉前缀，然后看看是否路径中包含 exclude_dir
+        path.strip_prefix(root_path)
+            .ok()
+            .and_then(|p| p.to_str())
+            .map_or(false, |p| p.contains(each))
+    })
 }

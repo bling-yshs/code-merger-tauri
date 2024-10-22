@@ -33,18 +33,20 @@ async function doMerge() {
   }
   global.showMergeResult = false
   global.mergeResult = ''
+  
+  
   const rootPath = global.pathToMerge
-  const excludeExts = config.excludeExts
-  const excludePaths = Array.from(
-    new Set([...global.getNoSelectPathList(), ...config.excludePaths])
-  )
-  const enableGitignore = config.enableGitignore
   const remindNum = config.remindNum
+  const noSelectPathList = global.getNoSelectPathList()
+  const excludeDirs = config.excludeDirs
+  const excludeExts = config.excludeExts
+  const enableGitignore = config.enableGitignore
   let areFilesLessThanRequest = new AreFilesLessThanRequest(
     rootPath,
     remindNum,
+    noSelectPathList,
+    excludeDirs,
     excludeExts,
-    excludePaths,
     enableGitignore
   )
   // 如果 remindNum 不为 0，且文件数量大于 remindNum，询问是否继续
@@ -61,7 +63,14 @@ async function doMerge() {
       }
     }
   }
-  let request = new MergeFilesRequest(rootPath, excludeExts, excludePaths, enableGitignore)
+  let request = new MergeFilesRequest(
+    rootPath,
+    noSelectPathList,
+    excludeDirs,
+    excludeExts,
+    enableGitignore
+  )
+  console.log('request', request)
   let mergeRes: DataResponse<string> = await invoke('merge_files', {
     request: request
   })

@@ -1,18 +1,15 @@
 export default class MergeFilesRequest {
-  constructor(
-    rootPath: string,
-    excludeExts: Array<string>,
-    excludePaths: Array<string>,
-    enableGitignore: boolean
-  ) {
+  rootPath: string
+  noSelectedPaths: Array<string>
+  excludeDirs: Array<string>
+  excludeExts: Array<string>
+  enableGitignore: boolean
+  
+  constructor(rootPath: string, noSelectedPaths: Array<string>, excludeDirs: Array<string>, excludeExts: Array<string>, enableGitignore: boolean) {
     this.rootPath = rootPath
+    this.noSelectedPaths = noSelectedPaths
+    this.excludeDirs = excludeDirs
     this.excludeExts = excludeExts
-    this.excludePaths = excludePaths
     this.enableGitignore = enableGitignore
   }
-
-  rootPath: string
-  excludeExts: Array<string>
-  excludePaths: Array<string>
-  enableGitignore: boolean
 }

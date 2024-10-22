@@ -5,7 +5,7 @@ import { useDark, useToggle } from '@vueuse/core'
 
 export const useConfigStore = defineStore('config', () => {
   const excludeExts = ref<Array<string>>([])
-  const excludePaths = ref<Array<string>>([])
+  const excludeDirs = ref<Array<string>>([])
   const remindNum = ref(0)
   const enableGitignore = ref(false)
   const isDark = useDark()
@@ -34,8 +34,8 @@ export const useConfigStore = defineStore('config', () => {
   watchAndSave(remindNum, 'remindNum')
   watchAndSave(theme, 'theme')
   watchAndSave(excludeExts, 'excludeExts', { deep: true })
-  watchAndSave(excludePaths, 'excludePaths', { deep: true })
-  return { theme, excludeExts, excludePaths, remindNum, enableGitignore, isDark, toggleTheme }
+  watchAndSave(excludeDirs, 'excludeDirs', { deep: true })
+  return { theme, excludeExts, excludeDirs, remindNum, enableGitignore, isDark, toggleTheme }
 })
 
 export const initConfigStore = async () => {
@@ -43,7 +43,7 @@ export const initConfigStore = async () => {
   const configStore = useConfigStore()
   configStore.isDark = (await dbStore.get('theme')) === 'dark'
   configStore.excludeExts = (await dbStore.get('excludeExts')) || new Array<string>()
-  configStore.excludePaths = (await dbStore.get('excludePaths')) || new Array<string>()
+  configStore.excludeDirs = (await dbStore.get('excludeDirs')) || new Array<string>()
   configStore.remindNum = (await dbStore.get('remindNum')) || 100
   configStore.enableGitignore = (await dbStore.get('enableGitignore')) || false
 }
