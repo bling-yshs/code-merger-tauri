@@ -72,11 +72,11 @@ fn main() {
                 "main",
                 tauri::WebviewUrl::App("index.html".into()),
             )
-                .title("code-merger-tauri")
-                .transparent(is_win11)
-                .center()
-                .visible(false)
-                .build()?;
+            .title("code-merger-tauri")
+            .transparent(is_win11)
+            .center()
+            .visible(false)
+            .build()?;
             // 如果是windows 11，则设置窗口透明，并且应用mica效果
             if is_win11 {
                 let is_dark = theme == "dark";
@@ -101,7 +101,7 @@ fn main() {
 #[tauri::command(async)]
 fn get_sub_files(request: GetSubFilesRequest) -> DataResponse<Vec<MyFile>> {
     if !Path::new(request.current_path.as_str()).exists() {
-        return DataResponse::failure("文件夹不存在".to_string());
+        return DataResponse::failure("文件夹不存在");
     }
 
     let mut files = Vec::new();
@@ -135,7 +135,7 @@ fn get_sub_files(request: GetSubFilesRequest) -> DataResponse<Vec<MyFile>> {
             }
         }
         Err(_) => {
-            return DataResponse::failure("读取文件夹内容失败".to_string());
+            return DataResponse::failure("读取文件夹内容失败");
         }
     }
 
@@ -148,7 +148,7 @@ fn merge_files(request: MergeFilesRequest) -> DataResponse<String> {
     let root_path = &request.root_path;
 
     if !Path::new(root_path).exists() {
-        return DataResponse::failure("文件夹不存在".to_string());
+        return DataResponse::failure("文件夹不存在");
     }
 
     let walker = WalkDir::new(root_path).into_iter();
@@ -160,16 +160,12 @@ fn merge_files(request: MergeFilesRequest) -> DataResponse<String> {
         let walker = ignore::WalkBuilder::new(root_path).hidden(true).build();
         for entry in walker
             .filter_map(Result::ok)
-            .filter(|each| {
-                !is_path_excluded(each.path(), &request.no_selected_paths)
-            })
+            .filter(|each| !is_path_excluded(each.path(), &request.no_selected_paths))
             .filter(|each| {
                 !is_dir_excluded(each.path(), Path::new(root_path), &request.exclude_dirs)
             })
             .filter(|each| each.file_type().map(|ft| ft.is_file()).unwrap_or(false))
-            .filter(|each| {
-                !is_ext_excluded(each.path(), &request.exclude_exts)
-            })
+            .filter(|each| !is_ext_excluded(each.path(), &request.exclude_exts))
         {
             let relative_path = entry
                 .path()
@@ -183,7 +179,7 @@ fn merge_files(request: MergeFilesRequest) -> DataResponse<String> {
                         "> {}\n```\n该文件是二进制文件，具体内容已忽略\n```\n",
                         entry.path().to_string_lossy()
                     )
-                        .as_str(),
+                    .as_str(),
                 );
                 String::new()
             });
@@ -195,17 +191,13 @@ fn merge_files(request: MergeFilesRequest) -> DataResponse<String> {
     } else {
         for entry in walker
             // 过滤掉在排除列表中的文件夹
-            .filter_entry(|each| {
-                !is_path_excluded(each.path(), &request.no_selected_paths)
-            })
+            .filter_entry(|each| !is_path_excluded(each.path(), &request.no_selected_paths))
             .filter_map(Result::ok)
             .filter(|each| {
                 !is_dir_excluded(each.path(), Path::new(root_path), &request.exclude_dirs)
             })
             .filter(|each| each.path().is_file())
-            .filter(|each| {
-                !is_ext_excluded(each.path(), &request.exclude_exts)
-            })
+            .filter(|each| !is_ext_excluded(each.path(), &request.exclude_exts))
         {
             let relative_path = entry
                 .path()
@@ -219,7 +211,7 @@ fn merge_files(request: MergeFilesRequest) -> DataResponse<String> {
                         "> {}\n```\n该文件是二进制文件，具体内容已忽略\n```\n",
                         entry.path().to_string_lossy()
                     )
-                        .as_str(),
+                    .as_str(),
                 );
                 String::new()
             });
@@ -231,7 +223,7 @@ fn merge_files(request: MergeFilesRequest) -> DataResponse<String> {
     }
 
     if res.is_empty() {
-        return DataResponse::failure("该文件夹下没有任何可读文件".to_string());
+        return DataResponse::failure("该文件夹下没有任何可读文件");
     }
 
     DataResponse::success(res)
@@ -258,20 +250,20 @@ fn are_files_less_than(request: AreFilesLessThanRequest) -> DataResponse<bool> {
     let root_path = Path::new(&request.root_path);
 
     if !root_path.exists() {
-        return DataResponse::failure("文件夹不存在".to_string());
+        return DataResponse::failure("文件夹不存在");
     }
 
     let mut file_count = 0;
 
     if request.enable_gitignore {
         let walker = WalkBuilder::new(&request.root_path).hidden(true).build();
-        for entry in walker.filter_map(Result::ok)
-            .filter(|each| {
-                !is_path_excluded(each.path(), &request.exclude_dirs)
-            })
+        for entry in walker
+            .filter_map(Result::ok)
+            .filter(|each| !is_path_excluded(each.path(), &request.exclude_dirs))
             .filter(|each| {
                 !is_dir_excluded(each.path(), Path::new(root_path), &request.exclude_dirs)
-            }) {
+            })
+        {
             if entry.file_type().map_or(false, |ft| ft.is_file()) {
                 file_count += 1;
                 if file_count >= request.num {
@@ -282,9 +274,7 @@ fn are_files_less_than(request: AreFilesLessThanRequest) -> DataResponse<bool> {
     } else {
         for entry in WalkDir::new(&request.root_path)
             .into_iter()
-            .filter_entry(|each| {
-                !is_path_excluded(each.path(), &request.exclude_dirs)
-            })
+            .filter_entry(|each| !is_path_excluded(each.path(), &request.exclude_dirs))
             .filter_map(Result::ok)
             .filter(|each| {
                 !is_dir_excluded(each.path(), Path::new(root_path), &request.exclude_dirs)
