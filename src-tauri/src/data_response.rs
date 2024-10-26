@@ -19,12 +19,12 @@ impl<T> DataResponse<T> {
             message: String::from("请求成功"),
         }
     }
-    pub fn failure(message: String) -> Self {
+    pub fn failure<M: Into<String>>(message: M) -> Self {
         DataResponse {
             code: 400,
             success: false,
             data: None,
-            message,
+            message: message.into(),
         }
     }
 
