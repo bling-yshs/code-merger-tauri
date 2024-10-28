@@ -156,9 +156,15 @@ fn merge_files(request: MergeFilesRequest) -> DataResponse<String> {
     let mut builder = WalkBuilder::new(&root_path);
     builder.hidden(true);
     if request.enable_gitignore {
+        builder.ignore(true);
         builder.git_ignore(true);
         builder.git_exclude(true);
         builder.git_global(true);
+    } else {
+        builder.ignore(false);
+        builder.git_ignore(false);
+        builder.git_exclude(false);
+        builder.git_global(false);
     }
     let walker = builder.build();
 
@@ -228,9 +234,15 @@ fn are_files_less_than(request: AreFilesLessThanRequest) -> DataResponse<bool> {
     let mut builder = WalkBuilder::new(&request.root_path);
     builder.hidden(true);
     if request.enable_gitignore {
+        builder.ignore(true);
         builder.git_ignore(true);
         builder.git_exclude(true);
         builder.git_global(true);
+    } else {
+        builder.ignore(false);
+        builder.git_ignore(false);
+        builder.git_exclude(false);
+        builder.git_global(false);
     }
     let walker = builder.build();
 
