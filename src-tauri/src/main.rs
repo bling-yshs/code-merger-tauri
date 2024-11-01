@@ -248,9 +248,10 @@ fn are_files_less_than(request: AreFilesLessThanRequest) -> DataResponse<bool> {
 
     for _ in walker
         .filter_map(Result::ok)
-        .filter(|each| !is_path_excluded(each.path(), &request.exclude_dirs))
-        .filter(|each| !is_dir_excluded(each.path(), root_path, &request.exclude_dirs))
+        .filter(|each| !is_path_excluded(each.path(), &request.no_selected_paths))
+        .filter(|each| !is_dir_excluded(each.path(), Path::new(root_path), &request.exclude_dirs))
         .filter(|each| each.file_type().map(|ft| ft.is_file()).unwrap_or(false))
+        .filter(|each| !is_ext_excluded(each.path(), &request.exclude_exts))
     {
         file_count += 1;
         if file_count >= request.num {
