@@ -46,7 +46,7 @@ fn main() {
                 File::create(&bin_path).unwrap();
             }
             // 创建一个store管理器
-            let store = app.handle().store_builder(bin_path).build();
+            let store = app.store(bin_path)?;
             // 旧版本兼容
             let is_dark = store
                 .get("isDark")

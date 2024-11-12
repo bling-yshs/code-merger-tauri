@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { computed, ComputedRef, Ref, ref, watch } from 'vue'
-import { createStore } from '@tauri-apps/plugin-store'
+import { load } from '@tauri-apps/plugin-store'
 import { useDark, useToggle } from '@vueuse/core'
 
 export const useConfigStore = defineStore('config', () => {
@@ -12,7 +12,7 @@ export const useConfigStore = defineStore('config', () => {
   const theme = computed(() => {
     return isDark.value === true ? 'dark' : 'light'
   })
-  
+
   // action
   const toggleTheme = useToggle(isDark)
 
@@ -21,9 +21,8 @@ export const useConfigStore = defineStore('config', () => {
     watch(
       source,
       async (value) => {
-        const dbStore = await createStore('code-merger-tauri.bin')
+        const dbStore = await load('code-merger-tauri.bin', { autoSave: true })
         await dbStore.set(key, value)
-        await dbStore.save()
       },
       options
     )
@@ -39,7 +38,7 @@ export const useConfigStore = defineStore('config', () => {
 })
 
 export const initConfigStore = async () => {
-  const dbStore = await createStore('code-merger-tauri.bin')
+  const dbStore = await load('code-merger-tauri.bin', { autoSave: true })
   const configStore = useConfigStore()
   configStore.isDark = (await dbStore.get('theme')) === 'dark'
   configStore.excludeExts = (await dbStore.get('excludeExts')) || new Array<string>()
