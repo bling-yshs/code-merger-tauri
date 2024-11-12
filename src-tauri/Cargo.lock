@@ -676,7 +676,6 @@ dependencies = [
  "tauri-plugin-store",
  "tiktoken-rs",
  "tokio",
- "walkdir",
  "window-vibrancy",
 ]
 

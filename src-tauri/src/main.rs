@@ -12,7 +12,6 @@ use tauri::Manager;
 use tauri_plugin_os::Version::Semantic;
 use tauri_plugin_store::StoreExt;
 use tiktoken_rs::o200k_base;
-use walkdir::{DirEntry, WalkDir};
 use window_vibrancy::apply_mica;
 
 use data_response::DataResponse;
@@ -147,78 +146,54 @@ fn get_sub_files(request: GetSubFilesRequest) -> DataResponse<Vec<MyFile>> {
 fn merge_files(request: MergeFilesRequest) -> DataResponse<String> {
     let root_path = &request.root_path;
 
-    if !Path::new(root_path).exists() {
+    if !Path::new(&root_path).exists() {
         return DataResponse::failure("文件夹不存在");
     }
 
-    let walker = WalkDir::new(root_path).into_iter();
-
     let mut res = String::new();
 
+    // 统一使用 ignore::Walk
+    let mut builder = WalkBuilder::new(&root_path);
+    builder.hidden(true);
     if request.enable_gitignore {
-        // 使用 ignore::Walk 进行遍历
-        let walker = ignore::WalkBuilder::new(root_path).hidden(true).build();
-        for entry in walker
-            .filter_map(Result::ok)
-            .filter(|each| !is_path_excluded(each.path(), &request.no_selected_paths))
-            .filter(|each| {
-                !is_dir_excluded(each.path(), Path::new(root_path), &request.exclude_dirs)
-            })
-            .filter(|each| each.file_type().map(|ft| ft.is_file()).unwrap_or(false))
-            .filter(|each| !is_ext_excluded(each.path(), &request.exclude_exts))
-        {
-            let relative_path = entry
-                .path()
-                .strip_prefix(root_path)
-                .unwrap()
-                .to_str()
-                .unwrap();
-            let content = read_file_to_string(entry.path()).unwrap_or_else(|_| {
-                res.push_str(
-                    format!(
-                        "> {}\n```\n该文件是二进制文件，具体内容已忽略\n```\n",
-                        entry.path().to_string_lossy()
-                    )
-                    .as_str(),
-                );
-                String::new()
-            });
-
-            if !content.is_empty() {
-                res.push_str(format!("> {}\n```\n{}\n```\n", relative_path, content).as_str());
-            }
-        }
+        builder.ignore(true);
+        builder.git_ignore(true);
+        builder.git_exclude(true);
+        builder.git_global(true);
     } else {
-        for entry in walker
-            // 过滤掉在排除列表中的文件夹
-            .filter_entry(|each| !is_path_excluded(each.path(), &request.no_selected_paths))
-            .filter_map(Result::ok)
-            .filter(|each| {
-                !is_dir_excluded(each.path(), Path::new(root_path), &request.exclude_dirs)
-            })
-            .filter(|each| each.path().is_file())
-            .filter(|each| !is_ext_excluded(each.path(), &request.exclude_exts))
-        {
-            let relative_path = entry
-                .path()
-                .strip_prefix(root_path)
-                .unwrap()
-                .to_str()
-                .unwrap();
-            let content = read_file_to_string(entry.path()).unwrap_or_else(|_| {
-                res.push_str(
-                    format!(
-                        "> {}\n```\n该文件是二进制文件，具体内容已忽略\n```\n",
-                        entry.path().to_string_lossy()
-                    )
-                    .as_str(),
-                );
-                String::new()
-            });
+        builder.ignore(false);
+        builder.git_ignore(false);
+        builder.git_exclude(false);
+        builder.git_global(false);
+    }
+    let walker = builder.build();
 
-            if !content.is_empty() {
-                res.push_str(format!("> {}\n```\n{}\n```\n", relative_path, content).as_str());
-            }
+    for entry in walker
+        .filter_map(Result::ok)
+        .filter(|each| !is_path_excluded(each.path(), &request.no_selected_paths))
+        .filter(|each| !is_dir_excluded(each.path(), Path::new(root_path), &request.exclude_dirs))
+        .filter(|each| each.file_type().map(|ft| ft.is_file()).unwrap_or(false))
+        .filter(|each| !is_ext_excluded(each.path(), &request.exclude_exts))
+    {
+        let relative_path = entry
+            .path()
+            .strip_prefix(root_path)
+            .unwrap()
+            .to_str()
+            .unwrap();
+        let content = read_file_to_string(entry.path()).unwrap_or_else(|_| {
+            res.push_str(
+                format!(
+                    "> {}\n```\n该文件是二进制文件，具体内容已忽略\n```\n",
+                    entry.path().to_string_lossy()
+                )
+                .as_str(),
+            );
+            String::new()
+        });
+
+        if !content.is_empty() {
+            res.push_str(format!("> {}\n```\n{}\n```\n", relative_path, content).as_str());
         }
     }
 
@@ -255,40 +230,34 @@ fn are_files_less_than(request: AreFilesLessThanRequest) -> DataResponse<bool> {
 
     let mut file_count = 0;
 
+    // 统一使用 ignore::Walk
+    let mut builder = WalkBuilder::new(&request.root_path);
+    builder.hidden(true);
     if request.enable_gitignore {
-        let walker = WalkBuilder::new(&request.root_path).hidden(true).build();
-        for entry in walker
-            .filter_map(Result::ok)
-            .filter(|each| !is_path_excluded(each.path(), &request.exclude_dirs))
-            .filter(|each| {
-                !is_dir_excluded(each.path(), Path::new(root_path), &request.exclude_dirs)
-            })
-        {
-            if entry.file_type().map_or(false, |ft| ft.is_file()) {
-                file_count += 1;
-                if file_count >= request.num {
-                    return DataResponse::success(false);
-                }
-            }
-        }
+        builder.ignore(true);
+        builder.git_ignore(true);
+        builder.git_exclude(true);
+        builder.git_global(true);
     } else {
-        for entry in WalkDir::new(&request.root_path)
-            .into_iter()
-            .filter_entry(|each| !is_path_excluded(each.path(), &request.exclude_dirs))
-            .filter_map(Result::ok)
-            .filter(|each| {
-                !is_dir_excluded(each.path(), Path::new(root_path), &request.exclude_dirs)
-            })
-        {
-            if entry.file_type().is_file() {
-                file_count += 1;
-                if file_count >= request.num {
-                    return DataResponse::success(false);
-                }
-            }
+        builder.ignore(false);
+        builder.git_ignore(false);
+        builder.git_exclude(false);
+        builder.git_global(false);
+    }
+    let walker = builder.build();
+
+    for _ in walker
+        .filter_map(Result::ok)
+        .filter(|each| !is_path_excluded(each.path(), &request.no_selected_paths))
+        .filter(|each| !is_dir_excluded(each.path(), Path::new(root_path), &request.exclude_dirs))
+        .filter(|each| each.file_type().map(|ft| ft.is_file()).unwrap_or(false))
+        .filter(|each| !is_ext_excluded(each.path(), &request.exclude_exts))
+    {
+        file_count += 1;
+        if file_count >= request.num {
+            return DataResponse::success(false);
         }
     }
-
     DataResponse::success(file_count < request.num)
 }
 
@@ -325,11 +294,8 @@ fn is_ext_excluded(path: &Path, exclude_exts: &[String]) -> bool {
 
 // 判断路径是否在排除列表中，如果在则返回true，否则返回false
 fn is_dir_excluded(path: &Path, root_path: &Path, exclude_dirs: &[String]) -> bool {
-    exclude_dirs.iter().any(|each| {
-        // 去掉前缀，然后看看是否路径中包含 exclude_dir
-        path.strip_prefix(root_path)
-            .ok()
-            .and_then(|p| p.to_str())
-            .map_or(false, |p| p.contains(each))
-    })
+    path.strip_prefix(root_path)
+        .ok()
+        .and_then(|p| p.to_str())
+        .map_or(false, |p| exclude_dirs.iter().any(|dir| p.contains(dir)))
 }
