@@ -17,9 +17,12 @@
         style="width: 100px"
       ></el-input-number>
     </div>
-    <div class=" flex items-center gap-10">
+    <div class="flex items-center gap-10">
       <span class="text-14 dark:color-gray-4">遵循 .gitignore 文件</span>
       <el-switch size="small" v-model="config.enableGitignore" />
+    </div>
+    <div>
+      <el-button class="fixed bottom-20" @click="test">测试按钮-请勿点击</el-button>
     </div>
   </div>
 </template>
@@ -28,6 +31,12 @@ import ExcludeExtension from '@/compoments/exclude-extension.vue'
 import ExcludePath from '@/compoments/exclude-path.vue'
 import { useConfigStore } from '@/stores/config.ts'
 import { QuestionFilled } from '@element-plus/icons-vue'
+
+import { ElMessage } from 'element-plus'
+
+async function test() {
+  ElMessage.success('测试')
+}
 
 const config = useConfigStore()
 </script>
